@@ -30,6 +30,62 @@ public class IndexCoder {
     return index;
   }
   
+  // TODO: refactor such that a projection returns a new coder that is able to cache certain things?
+  public int[] getIndexesForProjectedAssignment(int[] projectedAssignment, BitSet projection) {
+    int unprojectedCardinality = 1;
+    
+    for (int i = 0; i < variableCardinalities.length; i++) {
+      if (!projection.get(i)) {
+        unprojectedCardinality *= variableCardinalities[i];
+      }
+    }
+    
+    int[] indexes = new int[unprojectedCardinality];
+    
+    BitSet indexIndicator = new BitSet(maxIndex);
+    indexIndicator.flip(0, maxIndex);
+    
+    int varIndex = 0;
+    for (int i = 0; i < projectedAssignment.length; i++) {
+      varIndex = projection.nextSetBit(varIndex);
+      
+      int lowerCardinalities = 1;
+      int higherCardinalities = 1;
+      
+      for (int j = 0; j < variableCardinalities.length; j++) {
+        if (j < varIndex) {
+          lowerCardinalities *= variableCardinalities[j];
+          
+        } else if (j > varIndex) {
+          higherCardinalities *= variableCardinalities[j];
+        }
+      }
+      
+      int offset = lowerCardinalities * projectedAssignment[i];
+      
+      int numAssignmentBlocks = higherCardinalities;
+      
+      BitSet validAssignmentsForVariable = new BitSet(maxIndex);
+      for (int j = 0; j < numAssignmentBlocks; j++) {
+        for (int k = 0; k < lowerCardinalities; k++) {
+          validAssignmentsForVariable.set((j * lowerCardinalities * variableCardinalities[i]) + offset + k);
+        }
+      }
+      
+      indexIndicator.and(validAssignmentsForVariable);
+      varIndex++;
+    }
+    
+    int addedIndexes = 0;
+    int nextIndex = indexIndicator.nextSetBit(0);
+    while (nextIndex != -1) {
+      indexes[addedIndexes++] = nextIndex;
+      nextIndex = indexIndicator.nextSetBit(++nextIndex);
+    }
+    
+    return indexes;
+  }
+  
   public int[] getAssignmentForIndex(int index) {
     int[] assignment = new int[variableCardinalities.length];
     int multiple = maxIndex;

@@ -7,6 +7,8 @@ public interface DiscreteFactor {
 
   DiscreteFactor product(DiscreteFactor other);
   
+  DiscreteFactor marginal(Variables variables);
+  
   Variables getVariables();
   
   double getValueForAssignment(int[] assignment);

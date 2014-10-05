@@ -122,6 +122,129 @@ public class DiscreteFactorTest {
     assertThat(newValues[17]).isEqualTo(factor1Values[5] * factor2Values[2]);
   }
   
+  @Test
+  public void testFactorMarginalTwoVariables() {
+    Variables variables = newVariables(new DiscreteVariable("A", 3), new DiscreteVariable("B", 3));
+    TableBasedDiscreteFactor factor = new TableBasedDiscreteFactor(variables, 
+        new double[] {
+          1, 2, 3, // B == 0
+          4, 5, 6, // B == 1
+          7, 8, 9  // B == 2
+       });
+    
+    Variables variablesOfMarginal = newVariables(new DiscreteVariable("A", 3));
+    TableBasedDiscreteFactor marginalFactor = factor.marginal(variablesOfMarginal);
+    assertThat(marginalFactor.getVariables().getVariables()).hasSize(1);
+    assertThat(marginalFactor.getVariables().getVariables()).contains(new DiscreteVariable("A", 3));
+    
+    assertThat(marginalFactor.getValues()).hasSize(3);
+    assertThat(marginalFactor.getValues()[0]).isEqualTo(12);
+    assertThat(marginalFactor.getValues()[1]).isEqualTo(15);
+    assertThat(marginalFactor.getValues()[2]).isEqualTo(18);
+  }
+  
+  @Test
+  public void testFactorMarginalThreeVariablesCase1() {
+    Variables variables = newVariables(new DiscreteVariable("A", 3), new DiscreteVariable("B", 3), new DiscreteVariable("C", 2));
+    TableBasedDiscreteFactor factor = new TableBasedDiscreteFactor(variables, 
+        new double[] {
+          1, 2, 3, // B == 0, C == 0
+          4, 5, 6, // B == 1, C == 0
+          7, 8, 9, // B == 2, C == 0
+          10, 11, 12, // B == 0, C == 1
+          13, 14, 15, // B == 1, C == 1
+          16, 17, 18  // B == 2, C == 1
+       });
+    
+    Variables variablesOfMarginalA = newVariables(new DiscreteVariable("A", 3));
+    TableBasedDiscreteFactor marginalFactorA = factor.marginal(variablesOfMarginalA);
+    assertThat(marginalFactorA.getVariables().getVariables()).hasSize(1);
+    assertThat(marginalFactorA.getVariables().getVariables()).contains(new DiscreteVariable("A", 3));
+    
+    assertThat(marginalFactorA.getValues()).hasSize(3);
+    assertThat(marginalFactorA.getValues()[0]).isEqualTo(51);
+    assertThat(marginalFactorA.getValues()[1]).isEqualTo(57);
+    assertThat(marginalFactorA.getValues()[2]).isEqualTo(63);
+  }
+  
+  @Test
+  public void testFactorMarginalThreeVariablesCase2() {
+    Variables variables = newVariables(new DiscreteVariable("A", 3), new DiscreteVariable("B", 3), new DiscreteVariable("C", 2));
+    TableBasedDiscreteFactor factor = new TableBasedDiscreteFactor(variables, 
+        new double[] {
+          1, 2, 3, // B == 0, C == 0
+          4, 5, 6, // B == 1, C == 0
+          7, 8, 9, // B == 2, C == 0
+          10, 11, 12, // B == 0, C == 1
+          13, 14, 15, // B == 1, C == 1
+          16, 17, 18  // B == 2, C == 1
+       });
+    
+    Variables variablesOfMarginalB = newVariables(new DiscreteVariable("B", 3));
+    TableBasedDiscreteFactor marginalFactorB = factor.marginal(variablesOfMarginalB);
+    assertThat(marginalFactorB.getVariables().getVariables()).hasSize(1);
+    assertThat(marginalFactorB.getVariables().getVariables()).contains(new DiscreteVariable("B", 3));
+    
+    assertThat(marginalFactorB.getValues()).hasSize(3);
+    assertThat(marginalFactorB.getValues()[0]).isEqualTo(39);
+    assertThat(marginalFactorB.getValues()[1]).isEqualTo(57);
+    assertThat(marginalFactorB.getValues()[2]).isEqualTo(75);
+    
+  }
+  
+  @Test
+  public void testFactorMarginalThreeVariablesCase3() {
+    Variables variables = newVariables(new DiscreteVariable("A", 3), new DiscreteVariable("B", 3), new DiscreteVariable("C", 2));
+    TableBasedDiscreteFactor factor = new TableBasedDiscreteFactor(variables, 
+        new double[] {
+          1, 2, 3, // B == 0, C == 0
+          4, 5, 6, // B == 1, C == 0
+          7, 8, 9, // B == 2, C == 0
+          10, 11, 12, // B == 0, C == 1
+          13, 14, 15, // B == 1, C == 1
+          16, 17, 18  // B == 2, C == 1
+       });
+    
+    
+    Variables variablesOfMarginalC = newVariables(new DiscreteVariable("C", 2));
+    TableBasedDiscreteFactor marginalFactorC = factor.marginal(variablesOfMarginalC);
+    assertThat(marginalFactorC.getVariables().getVariables()).hasSize(1);
+    assertThat(marginalFactorC.getVariables().getVariables()).contains(new DiscreteVariable("C", 2));
+    
+    assertThat(marginalFactorC.getValues()).hasSize(2);
+    assertThat(marginalFactorC.getValues()[0]).isEqualTo(45);
+    assertThat(marginalFactorC.getValues()[1]).isEqualTo(126);
+    
+  }
+  
+  @Test
+  public void testFactorMarginalThreeVariablesCase4() {
+    Variables variables = newVariables(new DiscreteVariable("A", 3), new DiscreteVariable("B", 3), new DiscreteVariable("C", 2));
+    TableBasedDiscreteFactor factor = new TableBasedDiscreteFactor(variables, 
+        new double[] {
+          1, 2, 3, // B == 0, C == 0
+          4, 5, 6, // B == 1, C == 0
+          7, 8, 9, // B == 2, C == 0
+          10, 11, 12, // B == 0, C == 1
+          13, 14, 15, // B == 1, C == 1
+          16, 17, 18  // B == 2, C == 1
+       });
+    
+    Variables variablesOfMarginalBC = newVariables(new DiscreteVariable("B", 3), new DiscreteVariable("C", 2));
+    TableBasedDiscreteFactor marginalFactorBC = factor.marginal(variablesOfMarginalBC);
+    assertThat(marginalFactorBC.getVariables().getVariables()).hasSize(2);
+    assertThat(marginalFactorBC.getVariables().getVariables()).contains(new DiscreteVariable("B", 3));
+    assertThat(marginalFactorBC.getVariables().getVariables()).contains(new DiscreteVariable("C", 2));
+    
+    assertThat(marginalFactorBC.getValues()).hasSize(6);
+    assertThat(marginalFactorBC.getValues()[0]).isEqualTo(6); // B == 0, C == 0
+    assertThat(marginalFactorBC.getValues()[1]).isEqualTo(15); // B == 1, C == 0
+    assertThat(marginalFactorBC.getValues()[2]).isEqualTo(24); // B == 2, C == 0
+    assertThat(marginalFactorBC.getValues()[3]).isEqualTo(33); // B == 0, C == 1
+    assertThat(marginalFactorBC.getValues()[4]).isEqualTo(42); // B == 1, C == 1
+    assertThat(marginalFactorBC.getValues()[5]).isEqualTo(51); // B == 2, C == 1
+  }
+  
   protected Variables newVariables(DiscreteVariable... variables) {
     Set<DiscreteVariable> variableArgs = new HashSet<DiscreteVariable>();
     for (DiscreteVariable variable : variables) {
