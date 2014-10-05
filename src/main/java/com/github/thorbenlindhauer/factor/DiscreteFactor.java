@@ -7,7 +7,11 @@ public interface DiscreteFactor {
 
   DiscreteFactor product(DiscreteFactor other);
   
-  DiscreteFactor marginal(Scope variables);
+  DiscreteFactor marginal(Scope scope);
+  
+  DiscreteFactor observation(Scope scope, int[] values);
+  
+  DiscreteFactor normalize();
   
   Scope getVariables();
   

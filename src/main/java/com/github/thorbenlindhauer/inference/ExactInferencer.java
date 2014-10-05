@@ -6,5 +6,18 @@ public interface ExactInferencer {
 
   // TODO: add methods for getting the overall probability distribution, adding observations, etc.
   
-  double jointProbability(int[] variableAssignment, Scope projection);
+  /**
+   * P(Y)
+   */
+  double jointProbability(Scope projection, int[] variableAssignment);
+  
+  /**
+   * P(Y, E = e)
+   */
+  public double jointProbability(Scope projection, int[] variableAssignment, Scope observedVariables, int[] observation);
+  
+  /**
+   * P(Y | E = e)
+   */
+  public double jointProbabilityConditionedOn(Scope projection, int[] variableAssignment, Scope observedVariables, int[] observation);
 }

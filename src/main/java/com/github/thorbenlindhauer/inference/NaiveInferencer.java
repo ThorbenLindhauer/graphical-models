@@ -18,7 +18,34 @@ public class NaiveInferencer implements ExactInferencer {
     this.model = model;
   }
 
-  public double jointProbability(int[] variableAssignment, Scope projection) {
+  public double jointProbability(Scope projection, int[] variableAssignment) {
+    return jointProbability(projection, variableAssignment, null, null);
+  }
+  
+  public double jointProbability(Scope projection, int[] variableAssignment, Scope observedVariables, int[] observation) {
+    return jointProbabilityDistribution(projection, observedVariables, observation).getValueForAssignment(variableAssignment);
+  }
+  
+  public double jointProbabilityConditionedOn(Scope projection, int[] variableAssignment, Scope observedVariables, int[] observation) {
+    DiscreteFactor jointMarginalDistribution = jointProbabilityDistribution(projection, observedVariables, observation);
+    DiscreteFactor normalizedDistribution = jointMarginalDistribution.normalize();
+    return normalizedDistribution.getValueForAssignment(variableAssignment);
+  }
+  
+  // TODO: make public and test separately
+  protected DiscreteFactor jointProbabilityDistribution(Scope projection, Scope observedVariables, int[] observation) {
+    ensureJointDistributionInitialized();
+    
+    DiscreteFactor currentFactor = jointDistribution;
+    if (observation != null && observedVariables != null) {
+      currentFactor = currentFactor.observation(observedVariables, observation);
+    }
+    
+    DiscreteFactor marginalDistribution = currentFactor.marginal(projection);
+    return marginalDistribution;
+  }
+  
+  protected void ensureJointDistributionInitialized() {
     if (jointDistribution == null) {
       for (DiscreteFactor factor : model.getFactors()) {
         if (jointDistribution == null) {
@@ -28,8 +55,6 @@ public class NaiveInferencer implements ExactInferencer {
         }
       }
     }
-    
-    DiscreteFactor marginalDistribution = jointDistribution.marginal(projection);
-    return marginalDistribution.getValueForAssignment(variableAssignment);
   }
+
 }

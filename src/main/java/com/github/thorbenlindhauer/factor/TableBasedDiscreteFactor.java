@@ -73,6 +73,26 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
     
     return new TableBasedDiscreteFactor(variables, newValues);
   }
+
+  // TODO: consider implementing this as a view on the original factor
+  public TableBasedDiscreteFactor observation(Scope scope, int[] observedValues) {
+    if (scope.getVariables().size() != observedValues.length) {
+      // TODO: add cardinality check
+      throw new ModelStructureException("Observed variables and values do not match");
+    }
+    
+    double[] newValues = new double[values.length];
+    BitSet projection = variables.getProjection(scope);
+    int[] indexesToRetain = variables.getIndexCoder().getIndexesForProjectedAssignment(observedValues, projection);
+    
+    for (int indexToRetain : indexesToRetain) {
+      newValues[indexToRetain] = values[indexToRetain];
+    }
+    
+    TableBasedDiscreteFactor newFactor = new TableBasedDiscreteFactor(variables, newValues);
+    
+    return newFactor;
+  }
   
   public Scope getVariables() {
     return variables;
@@ -99,5 +119,25 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
     
     return sum;
   }
+
+
+  public TableBasedDiscreteFactor normalize() {
+    double valueSum = 0.0d;
+    
+    for (double value : values) {
+      valueSum += value;
+    }
+    
+    double[] newValues = new double[values.length];
+    for (int i = 0; i < values.length; i++) {
+      if (values[i] != 0) {
+        newValues[i] = values[i] / valueSum;
+      }
+    }
+    
+    return new TableBasedDiscreteFactor(variables, newValues);
+  }
+
+
 
 }

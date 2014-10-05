@@ -245,6 +245,58 @@ public class DiscreteFactorTest {
     assertThat(marginalFactorBC.getValues()[5]).isEqualTo(51); // B == 2, C == 1
   }
   
+  @Test
+  public void testValueObservation() {
+    Scope scope = newVariables(new DiscreteVariable("A", 3), new DiscreteVariable("B", 3), new DiscreteVariable("C", 2));
+    TableBasedDiscreteFactor factor = new TableBasedDiscreteFactor(scope, 
+        new double[] {
+          1, 2, 3, // B == 0, C == 0
+          4, 5, 6, // B == 1, C == 0
+          7, 8, 9, // B == 2, C == 0
+          10, 11, 12, // B == 0, C == 1
+          13, 14, 15, // B == 1, C == 1
+          16, 17, 18  // B == 2, C == 1
+       });
+    
+    TableBasedDiscreteFactor observedValuesFactor = factor.observation(scope.subScope("A"), new int[] {0});
+    
+    double[] valuesAfterObservation = observedValuesFactor.getValues();
+    assertThat(valuesAfterObservation).isEqualTo(new double[] {
+        1, 0, 0, // B == 0, C == 0
+        4, 0, 0, // B == 1, C == 0
+        7, 0, 0, // B == 2, C == 0
+        10, 0, 0, // B == 0, C == 1
+        13, 0, 0, // B == 1, C == 1
+        16, 0, 0  // B == 2, C == 1
+     });
+  }
+  
+  @Test
+  public void testValueObservationCase2() {
+    Scope scope = newVariables(new DiscreteVariable("A", 3), new DiscreteVariable("B", 3), new DiscreteVariable("C", 2));
+    TableBasedDiscreteFactor factor = new TableBasedDiscreteFactor(scope, 
+        new double[] {
+          1, 2, 3, // B == 0, C == 0
+          4, 5, 6, // B == 1, C == 0
+          7, 8, 9, // B == 2, C == 0
+          10, 11, 12, // B == 0, C == 1
+          13, 14, 15, // B == 1, C == 1
+          16, 17, 18  // B == 2, C == 1
+       });
+    
+    TableBasedDiscreteFactor observedValuesFactor = factor.observation(scope.subScope("A", "C"), new int[] {0, 1});
+    
+    double[] valuesAfterObservation = observedValuesFactor.getValues();
+    assertThat(valuesAfterObservation).isEqualTo(new double[] {
+        0, 0, 0, // B == 0, C == 0
+        0, 0, 0, // B == 1, C == 0
+        0, 0, 0, // B == 2, C == 0
+        10, 0, 0, // B == 0, C == 1
+        13, 0, 0, // B == 1, C == 1
+        16, 0, 0  // B == 2, C == 1
+     });
+  }
+  
   protected Scope newVariables(DiscreteVariable... variables) {
     Set<DiscreteVariable> variableArgs = new HashSet<DiscreteVariable>();
     for (DiscreteVariable variable : variables) {
