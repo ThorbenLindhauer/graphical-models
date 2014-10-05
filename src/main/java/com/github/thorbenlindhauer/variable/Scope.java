@@ -2,9 +2,13 @@ package com.github.thorbenlindhauer.variable;
 
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+
+import com.github.thorbenlindhauer.exception.ModelStructureException;
 
 
 //TODO: refactor to common interface and subclass DiscreteVariables ?
@@ -93,5 +97,19 @@ public class Scope {
   
   public boolean isEmpty() {
     return variables.isEmpty();
+  }
+
+  public Scope subScope(String... variableIds) {
+    Set<DiscreteVariable> subVariables = new HashSet<DiscreteVariable>();
+    
+    for (String variableId : variableIds) {
+      if (!has(variableId)) {
+        throw new ModelStructureException("Variable " + variableId + " is not part of this scope.");
+      }
+      
+      subVariables.add(variables.get(variableId));
+    }
+    
+    return new Scope(subVariables);
   }
 }
