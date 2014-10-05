@@ -9,14 +9,14 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.github.thorbenlindhauer.variable.DiscreteVariable;
-import com.github.thorbenlindhauer.variable.Variables;
+import com.github.thorbenlindhauer.variable.Scope;
 
 public class DiscreteFactorTest {
 
   
   @Test
   public void testFactorProduct() {
-    Variables variablesFactor1 = newVariables(new DiscreteVariable("A", 2), new DiscreteVariable("B", 5));
+    Scope variablesFactor1 = newVariables(new DiscreteVariable("A", 2), new DiscreteVariable("B", 5));
     TableBasedDiscreteFactor factor1 = new TableBasedDiscreteFactor(variablesFactor1, 
         new double[] {
           1, 2, // B == 0
@@ -26,7 +26,7 @@ public class DiscreteFactorTest {
           9, 10 // B == 4
        });
     
-    Variables variablesFactor2 = newVariables(new DiscreteVariable("B", 5), new DiscreteVariable("C", 3));
+    Scope variablesFactor2 = newVariables(new DiscreteVariable("B", 5), new DiscreteVariable("C", 3));
     TableBasedDiscreteFactor factor2 = new TableBasedDiscreteFactor(variablesFactor2, 
         new double[] {
           1, 2, 3, 4, 5,        // C == 0
@@ -78,7 +78,7 @@ public class DiscreteFactorTest {
   
   @Test
   public void testFactorProductOfIndependentFactors() {
-    Variables variablesFactor1 = newVariables(new DiscreteVariable("A", 2), new DiscreteVariable("B", 3));
+    Scope variablesFactor1 = newVariables(new DiscreteVariable("A", 2), new DiscreteVariable("B", 3));
     TableBasedDiscreteFactor factor1 = new TableBasedDiscreteFactor(variablesFactor1, 
         new double[] {
           1, 2, // B == 0
@@ -86,7 +86,7 @@ public class DiscreteFactorTest {
           5, 6, // B == 2
        });
     
-    Variables variablesFactor2 = newVariables(new DiscreteVariable("C", 3));
+    Scope variablesFactor2 = newVariables(new DiscreteVariable("C", 3));
     TableBasedDiscreteFactor factor2 = new TableBasedDiscreteFactor(variablesFactor2, 
         new double[] {
           1, 2, 3
@@ -124,7 +124,7 @@ public class DiscreteFactorTest {
   
   @Test
   public void testFactorMarginalTwoVariables() {
-    Variables variables = newVariables(new DiscreteVariable("A", 3), new DiscreteVariable("B", 3));
+    Scope variables = newVariables(new DiscreteVariable("A", 3), new DiscreteVariable("B", 3));
     TableBasedDiscreteFactor factor = new TableBasedDiscreteFactor(variables, 
         new double[] {
           1, 2, 3, // B == 0
@@ -132,7 +132,7 @@ public class DiscreteFactorTest {
           7, 8, 9  // B == 2
        });
     
-    Variables variablesOfMarginal = newVariables(new DiscreteVariable("A", 3));
+    Scope variablesOfMarginal = newVariables(new DiscreteVariable("A", 3));
     TableBasedDiscreteFactor marginalFactor = factor.marginal(variablesOfMarginal);
     assertThat(marginalFactor.getVariables().getVariables()).hasSize(1);
     assertThat(marginalFactor.getVariables().getVariables()).contains(new DiscreteVariable("A", 3));
@@ -145,7 +145,7 @@ public class DiscreteFactorTest {
   
   @Test
   public void testFactorMarginalThreeVariablesCase1() {
-    Variables variables = newVariables(new DiscreteVariable("A", 3), new DiscreteVariable("B", 3), new DiscreteVariable("C", 2));
+    Scope variables = newVariables(new DiscreteVariable("A", 3), new DiscreteVariable("B", 3), new DiscreteVariable("C", 2));
     TableBasedDiscreteFactor factor = new TableBasedDiscreteFactor(variables, 
         new double[] {
           1, 2, 3, // B == 0, C == 0
@@ -156,7 +156,7 @@ public class DiscreteFactorTest {
           16, 17, 18  // B == 2, C == 1
        });
     
-    Variables variablesOfMarginalA = newVariables(new DiscreteVariable("A", 3));
+    Scope variablesOfMarginalA = newVariables(new DiscreteVariable("A", 3));
     TableBasedDiscreteFactor marginalFactorA = factor.marginal(variablesOfMarginalA);
     assertThat(marginalFactorA.getVariables().getVariables()).hasSize(1);
     assertThat(marginalFactorA.getVariables().getVariables()).contains(new DiscreteVariable("A", 3));
@@ -169,7 +169,7 @@ public class DiscreteFactorTest {
   
   @Test
   public void testFactorMarginalThreeVariablesCase2() {
-    Variables variables = newVariables(new DiscreteVariable("A", 3), new DiscreteVariable("B", 3), new DiscreteVariable("C", 2));
+    Scope variables = newVariables(new DiscreteVariable("A", 3), new DiscreteVariable("B", 3), new DiscreteVariable("C", 2));
     TableBasedDiscreteFactor factor = new TableBasedDiscreteFactor(variables, 
         new double[] {
           1, 2, 3, // B == 0, C == 0
@@ -180,7 +180,7 @@ public class DiscreteFactorTest {
           16, 17, 18  // B == 2, C == 1
        });
     
-    Variables variablesOfMarginalB = newVariables(new DiscreteVariable("B", 3));
+    Scope variablesOfMarginalB = newVariables(new DiscreteVariable("B", 3));
     TableBasedDiscreteFactor marginalFactorB = factor.marginal(variablesOfMarginalB);
     assertThat(marginalFactorB.getVariables().getVariables()).hasSize(1);
     assertThat(marginalFactorB.getVariables().getVariables()).contains(new DiscreteVariable("B", 3));
@@ -194,7 +194,7 @@ public class DiscreteFactorTest {
   
   @Test
   public void testFactorMarginalThreeVariablesCase3() {
-    Variables variables = newVariables(new DiscreteVariable("A", 3), new DiscreteVariable("B", 3), new DiscreteVariable("C", 2));
+    Scope variables = newVariables(new DiscreteVariable("A", 3), new DiscreteVariable("B", 3), new DiscreteVariable("C", 2));
     TableBasedDiscreteFactor factor = new TableBasedDiscreteFactor(variables, 
         new double[] {
           1, 2, 3, // B == 0, C == 0
@@ -206,7 +206,7 @@ public class DiscreteFactorTest {
        });
     
     
-    Variables variablesOfMarginalC = newVariables(new DiscreteVariable("C", 2));
+    Scope variablesOfMarginalC = newVariables(new DiscreteVariable("C", 2));
     TableBasedDiscreteFactor marginalFactorC = factor.marginal(variablesOfMarginalC);
     assertThat(marginalFactorC.getVariables().getVariables()).hasSize(1);
     assertThat(marginalFactorC.getVariables().getVariables()).contains(new DiscreteVariable("C", 2));
@@ -219,7 +219,7 @@ public class DiscreteFactorTest {
   
   @Test
   public void testFactorMarginalThreeVariablesCase4() {
-    Variables variables = newVariables(new DiscreteVariable("A", 3), new DiscreteVariable("B", 3), new DiscreteVariable("C", 2));
+    Scope variables = newVariables(new DiscreteVariable("A", 3), new DiscreteVariable("B", 3), new DiscreteVariable("C", 2));
     TableBasedDiscreteFactor factor = new TableBasedDiscreteFactor(variables, 
         new double[] {
           1, 2, 3, // B == 0, C == 0
@@ -230,7 +230,7 @@ public class DiscreteFactorTest {
           16, 17, 18  // B == 2, C == 1
        });
     
-    Variables variablesOfMarginalBC = newVariables(new DiscreteVariable("B", 3), new DiscreteVariable("C", 2));
+    Scope variablesOfMarginalBC = newVariables(new DiscreteVariable("B", 3), new DiscreteVariable("C", 2));
     TableBasedDiscreteFactor marginalFactorBC = factor.marginal(variablesOfMarginalBC);
     assertThat(marginalFactorBC.getVariables().getVariables()).hasSize(2);
     assertThat(marginalFactorBC.getVariables().getVariables()).contains(new DiscreteVariable("B", 3));
@@ -245,12 +245,12 @@ public class DiscreteFactorTest {
     assertThat(marginalFactorBC.getValues()[5]).isEqualTo(51); // B == 2, C == 1
   }
   
-  protected Variables newVariables(DiscreteVariable... variables) {
+  protected Scope newVariables(DiscreteVariable... variables) {
     Set<DiscreteVariable> variableArgs = new HashSet<DiscreteVariable>();
     for (DiscreteVariable variable : variables) {
       variableArgs.add(variable);
     }
     
-    return new Variables(variableArgs);
+    return new Scope(variableArgs);
   }
 }

@@ -8,13 +8,14 @@ import java.util.TreeMap;
 
 
 //TODO: refactor to common interface and subclass DiscreteVariables ?
-public class Variables {
+//TODO: implement Map interface?
+public class Scope {
 
   protected SortedMap<String, DiscreteVariable> variables;
   protected IndexCoder indexCoder;
   protected int distinctValues;
   
-  public Variables(Collection<DiscreteVariable> variables) {
+  public Scope(Collection<DiscreteVariable> variables) {
     this.variables = new TreeMap<String, DiscreteVariable>();
     
     for (DiscreteVariable variable : variables) {
@@ -49,7 +50,7 @@ public class Variables {
    * @param variablesToBeProjected
    * @return
    */
-  public BitSet getProjection(Variables variablesToBeProjected) {
+  public BitSet getProjection(Scope variablesToBeProjected) {
     BitSet projection = new BitSet();
     int currentBit = 0;
     Iterator<DiscreteVariable> canonicalIt = canonicalIterator();
@@ -72,6 +73,14 @@ public class Variables {
   
   public boolean has(DiscreteVariable variable) {
     return this.variables.containsKey(variable.getId());
+  }
+  
+  public boolean has(String variableId) {
+    return this.variables.containsKey(variableId);
+  }
+  
+  public DiscreteVariable get(String variableId) {
+    return variables.get(variableId);
   }
   
   public IndexCoder getIndexCoder() {

@@ -1,15 +1,15 @@
 package com.github.thorbenlindhauer.factor;
 
-import com.github.thorbenlindhauer.variable.Variables;
+import com.github.thorbenlindhauer.variable.Scope;
 
 
 public interface DiscreteFactor {
 
   DiscreteFactor product(DiscreteFactor other);
   
-  DiscreteFactor marginal(Variables variables);
+  DiscreteFactor marginal(Scope variables);
   
-  Variables getVariables();
+  Scope getVariables();
   
   double getValueForAssignment(int[] assignment);
   

@@ -7,7 +7,7 @@ import java.util.Set;
 import com.github.thorbenlindhauer.exception.ModelStructureException;
 import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.IndexCoder;
-import com.github.thorbenlindhauer.variable.Variables;
+import com.github.thorbenlindhauer.variable.Scope;
 
 /**
  * Factors are immutable.
@@ -16,10 +16,10 @@ import com.github.thorbenlindhauer.variable.Variables;
  */
 public class TableBasedDiscreteFactor implements DiscreteFactor {
 
-  protected Variables variables;
+  protected Scope variables;
   protected double[] values;
   
-  public TableBasedDiscreteFactor(Variables variables, double[] values) {
+  public TableBasedDiscreteFactor(Scope variables, double[] values) {
     if (variables == null || variables.isEmpty()) {
       throw new ModelStructureException("Factor must be defined over at least one variable");
     }
@@ -35,7 +35,7 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
     newVars.addAll(this.variables.getVariables());
     newVars.addAll(other.getVariables().getVariables());
     
-    Variables newVariables = new Variables(newVars);
+    Scope newVariables = new Scope(newVars);
     
     BitSet varsFactor1 = newVariables.getProjection(variables);
     BitSet varsFactor2 = newVariables.getProjection(other.getVariables());
@@ -57,7 +57,7 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
     return newFactor;
   }
 
-  public TableBasedDiscreteFactor marginal(Variables variables) {
+  public TableBasedDiscreteFactor marginal(Scope variables) {
     if (!this.variables.getVariables().containsAll(variables.getVariables())) {
       throw new ModelStructureException("argument variables are not all contained by this factor");
     }
@@ -74,7 +74,7 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
     return new TableBasedDiscreteFactor(variables, newValues);
   }
   
-  public Variables getVariables() {
+  public Scope getVariables() {
     return variables;
   }
 
