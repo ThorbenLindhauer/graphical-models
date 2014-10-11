@@ -57,21 +57,21 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
     return newFactor;
   }
 
-  public TableBasedDiscreteFactor marginal(Scope variables) {
-    if (!this.variables.getVariables().containsAll(variables.getVariables())) {
+  public TableBasedDiscreteFactor marginal(Scope scope) {
+    if (!this.variables.getVariables().containsAll(scope.getVariables())) {
       throw new ModelStructureException("argument variables are not all contained by this factor");
     }
     
-    double[] newValues = new double[variables.getNumDistinctValues()];
-    IndexCoder indexCoder = variables.getIndexCoder();
+    double[] newValues = new double[scope.getNumDistinctValues()];
+    IndexCoder indexCoder = scope.getIndexCoder();
     
     for (int i = 0; i < newValues.length; i++) {
       int[] assignment = indexCoder.getAssignmentForIndex(i);
-      BitSet projection = this.variables.getProjection(variables);
+      BitSet projection = this.variables.getProjection(scope);
       newValues[i] = sumValuesForAssignment(assignment, projection);
     }
     
-    return new TableBasedDiscreteFactor(variables, newValues);
+    return new TableBasedDiscreteFactor(scope, newValues);
   }
 
   // TODO: consider implementing this as a view on the original factor
@@ -79,6 +79,10 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
     if (scope.getVariables().size() != observedValues.length) {
       // TODO: add cardinality check
       throw new ModelStructureException("Observed variables and values do not match");
+    }
+    
+    if (variables.intersect(scope).isEmpty()) {
+      return this;
     }
     
     double[] newValues = new double[values.length];

@@ -1,6 +1,7 @@
 package com.github.thorbenlindhauer.inference;
 
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.FactorUtil;
 import com.github.thorbenlindhauer.network.GraphicalModel;
 import com.github.thorbenlindhauer.variable.Scope;
 
@@ -47,13 +48,7 @@ public class NaiveInferencer implements ExactInferencer {
   
   protected void ensureJointDistributionInitialized() {
     if (jointDistribution == null) {
-      for (DiscreteFactor factor : model.getFactors()) {
-        if (jointDistribution == null) {
-          jointDistribution = factor;
-        } else {
-          jointDistribution = jointDistribution.product(factor);
-        }
-      }
+      jointDistribution = FactorUtil.jointDistribution(model.getFactors());
     }
   }
 

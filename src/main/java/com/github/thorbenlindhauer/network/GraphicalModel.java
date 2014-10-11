@@ -1,5 +1,6 @@
 package com.github.thorbenlindhauer.network;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
@@ -17,7 +18,7 @@ public class GraphicalModel {
   }
 
   public Set<DiscreteFactor> getFactors() {
-    return factors;
+    return new HashSet<DiscreteFactor>(factors);
   }
 
   public Scope getScope() {

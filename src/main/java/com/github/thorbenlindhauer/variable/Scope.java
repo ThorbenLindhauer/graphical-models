@@ -2,8 +2,10 @@ package com.github.thorbenlindhauer.variable;
 
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -72,7 +74,11 @@ public class Scope {
   }
   
   public Collection<DiscreteVariable> getVariables() {
-    return variables.values();
+    return new HashSet<DiscreteVariable>(variables.values());
+  }
+  
+  public Collection<String> getVariableIds() {
+    return new HashSet<String>(variables.keySet());
   }
   
   public boolean has(DiscreteVariable variable) {
@@ -111,5 +117,34 @@ public class Scope {
     }
     
     return new Scope(subVariables);
+  }
+  
+  public Scope intersect(Scope other) {
+    Set<DiscreteVariable> retainedVariables = new HashSet<DiscreteVariable>();
+    
+    for (DiscreteVariable variable : variables.values()) {
+      if (other.has(variable)) {
+        retainedVariables.add(variable);
+      }
+    }
+    
+    return new Scope(retainedVariables);
+    
+  }
+  
+  public Scope removeAll(String... variableIds) {
+    Map<String, DiscreteVariable> newVariables = new HashMap<String, DiscreteVariable>(variables);
+   
+    for (String variableId : variableIds) {
+      newVariables.remove(variableId);
+    }
+    
+    return new Scope(newVariables.values());
+  }
+  
+  public Scope removeAll(Scope other) {
+    Collection<String> variables = other.getVariableIds();
+    
+    return removeAll(variables.toArray(new String[variables.size()]));
   }
 }
