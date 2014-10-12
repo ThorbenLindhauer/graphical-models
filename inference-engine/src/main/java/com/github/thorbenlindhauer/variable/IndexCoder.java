@@ -2,6 +2,8 @@ package com.github.thorbenlindhauer.variable;
 
 import java.util.BitSet;
 
+import com.github.thorbenlindhauer.exception.ModelStructureException;
+
 public class IndexCoder {
 
   protected int[] variableCardinalities;
@@ -102,6 +104,19 @@ public class IndexCoder {
   public int[] getAssignmentForIndex(int index, BitSet projection) {
     int[] assignment = getAssignmentForIndex(index);
     return projectAssignment(assignment, projection);
+  }
+  
+  public IndexMapper getIndexMapper(int[] mapping) {
+    if (mapping.length != variableCardinalities.length) {
+      throw new ModelStructureException("Invalid mapping " + mapping + " for cardinalities " + variableCardinalities);
+    }
+    
+    int[] mappedVariableCardinalities = new int[variableCardinalities.length];
+    for (int i = 0; i < mappedVariableCardinalities.length; i++) {
+      mappedVariableCardinalities[mapping[i]] = variableCardinalities[i];
+    }
+    
+    return new IndexMapper(this, new IndexCoder(mappedVariableCardinalities), mapping);
   }
   
   public static int[] projectAssignment(int[] assignment, BitSet projection) {
