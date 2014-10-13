@@ -147,4 +147,25 @@ public class Scope {
     
     return removeAll(variables.toArray(new String[variables.size()]));
   }
+  
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    
+    sb.append("[");
+    
+    int i = 0;
+    for (String variableId : variables.keySet()) {
+      sb.append(variableId);
+      
+      if (i != variables.size() - 1) {
+        sb.append(", ");
+      }
+      
+      i++;
+    }
+    
+    sb.append("]");
+    
+    return sb.toString();
+  }
 }

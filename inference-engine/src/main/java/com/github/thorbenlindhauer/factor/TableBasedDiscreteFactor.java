@@ -141,6 +141,15 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
     
     return new TableBasedDiscreteFactor(variables, newValues);
   }
+  
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    
+    sb.append("Scope: ");
+    sb.append(variables.toString());
+    
+    return sb.toString();
+  }
 
 
 

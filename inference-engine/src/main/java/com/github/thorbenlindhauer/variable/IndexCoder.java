@@ -132,4 +132,13 @@ public class IndexCoder {
     
     return projectedAssignment;
   }
+  
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    
+    sb.append("Cardinalities: ");
+    sb.append(variableCardinalities);
+    
+    return sb.toString();
+  }
 }
