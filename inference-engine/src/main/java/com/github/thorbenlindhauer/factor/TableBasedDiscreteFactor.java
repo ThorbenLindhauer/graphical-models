@@ -58,20 +58,22 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
   }
 
   public TableBasedDiscreteFactor marginal(Scope scope) {
-    if (!this.variables.getVariables().containsAll(scope.getVariables())) {
-      throw new ModelStructureException("argument variables are not all contained by this factor");
+    Scope newScope = variables.intersect(scope);
+    
+    if (newScope.getVariableIds().equals(variables.getVariableIds())) {
+      return this;
     }
     
-    double[] newValues = new double[scope.getNumDistinctValues()];
-    IndexCoder indexCoder = scope.getIndexCoder();
+    double[] newValues = new double[newScope.getNumDistinctValues()];
+    IndexCoder indexCoder = newScope.getIndexCoder();
     
     for (int i = 0; i < newValues.length; i++) {
       int[] assignment = indexCoder.getAssignmentForIndex(i);
-      BitSet projection = this.variables.getProjection(scope);
+      BitSet projection = this.variables.getProjection(newScope);
       newValues[i] = sumValuesForAssignment(assignment, projection);
     }
     
-    return new TableBasedDiscreteFactor(scope, newValues);
+    return new TableBasedDiscreteFactor(newScope, newValues);
   }
 
   // TODO: consider implementing this as a view on the original factor
@@ -85,9 +87,13 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
       return this;
     }
     
+    BitSet observedVariablesProjection = scope.getProjection(variables);
+    Scope reducedObservedVariables = scope.intersect(variables);
+    int[] reducedObservation = IndexCoder.projectAssignment(observedValues, observedVariablesProjection);
+    
     double[] newValues = new double[values.length];
-    BitSet projection = variables.getProjection(scope);
-    int[] indexesToRetain = variables.getIndexCoder().getIndexesForProjectedAssignment(observedValues, projection);
+    BitSet projection = variables.getProjection(reducedObservedVariables);
+    int[] indexesToRetain = variables.getIndexCoder().getIndexesForProjectedAssignment(reducedObservation, projection);
     
     for (int indexToRetain : indexesToRetain) {
       newValues[indexToRetain] = values[indexToRetain];

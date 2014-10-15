@@ -97,4 +97,6 @@ public abstract class ExactInferencerTest {
       );
     assertThat(jointTwoProbability).isEqualTo(0.374832664d, DOUBLE_VALUE_TOLERANCE);
   }
+  
+  // TODO: test some distribution P(A | B=b, C=c), i.e. with two variables conditioned on
 }

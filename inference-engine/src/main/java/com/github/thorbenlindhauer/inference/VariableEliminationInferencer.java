@@ -1,9 +1,7 @@
 package com.github.thorbenlindhauer.inference;
 
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -13,7 +11,6 @@ import com.github.thorbenlindhauer.factor.FactorUtil;
 import com.github.thorbenlindhauer.inference.variableelimination.VariableEliminationStrategy;
 import com.github.thorbenlindhauer.network.GraphicalModel;
 import com.github.thorbenlindhauer.variable.DiscreteVariable;
-import com.github.thorbenlindhauer.variable.IndexCoder;
 import com.github.thorbenlindhauer.variable.Scope;
 
 /**
@@ -37,71 +34,56 @@ public class VariableEliminationInferencer implements ExactInferencer {
   }
 
   public double jointProbability(Scope projection, int[] variableAssignment, Scope observedVariables, int[] observation) {
-    Collection<String> variablesToEliminate = graphicalModel.getScope().removeAll(projection).getVariableIds();
-    List<String> variableEliminationOrder = variableEliminationStrategy.getEliminationOrder(graphicalModel, variablesToEliminate);
-    return jointProbabilityDistribution(projection, observedVariables, observation, variableEliminationOrder).getValueForAssignment(variableAssignment);
+    return jointProbabilityDistribution(projection, observedVariables, observation).getValueForAssignment(variableAssignment);
   }
 
   public double jointProbabilityConditionedOn(Scope projection, int[] variableAssignment, Scope observedVariables, int[] observation) {
-    Collection<String> variablesToEliminate = graphicalModel.getScope().removeAll(projection).getVariableIds();
-    List<String> variableEliminationOrder = variableEliminationStrategy.getEliminationOrder(graphicalModel, variablesToEliminate);
-    
-    DiscreteFactor jointMarginalDistribution = jointProbabilityDistribution(projection, observedVariables, observation, variableEliminationOrder);
+    DiscreteFactor jointMarginalDistribution = jointProbabilityDistribution(projection, observedVariables, observation);
     DiscreteFactor normalizedDistribution = jointMarginalDistribution.normalize();
     return normalizedDistribution.getValueForAssignment(variableAssignment);
   }
   
-  protected DiscreteFactor jointProbabilityDistribution(Scope projection, Scope observedVariables, int[] observation, List<String> variableEliminationOrder) {
-    validateEliminationOrder(projection, variableEliminationOrder);
+  protected GraphicalModel reduceModelByObservations(Scope observedVariables, int[] observation) {
+    Scope newScope = graphicalModel.getScope().removeAll(observedVariables);
     
-    Set<DiscreteFactor> factors = graphicalModel.getFactors();
-    Set<DiscreteFactor> factorsWithObservations = processObservations(factors, observedVariables, observation);
+    Set<DiscreteFactor> newFactors = new HashSet<DiscreteFactor>();
     
+    for (DiscreteFactor factor : graphicalModel.getFactors()) {
+      newFactors.add(factor.observation(observedVariables, observation).marginal(newScope));
+    }
+    
+    GraphicalModel newModel = new GraphicalModel(newScope, newFactors);
+    return newModel;
+  }
+  
+  protected DiscreteFactor jointProbabilityDistribution(Scope projection, Scope observedVariables, int[] observation) {
+    // 1. reduce model by observations (i.e. effectively remove the variables that are observed from the new model)
+    GraphicalModel reducedModel = graphicalModel;
+    if (observedVariables != null && !observedVariables.isEmpty()) {
+      reducedModel = reduceModelByObservations(observedVariables, observation);
+    }
+    
+    // 2. determine a variable elimination order for the new model
+    Collection<String> variablesToEliminate = reducedModel.getScope().removeAll(projection).getVariableIds();
+    List<String> variableEliminationOrder = variableEliminationStrategy.getEliminationOrder(reducedModel, variablesToEliminate);
+    validateEliminationOrder(reducedModel, projection, variableEliminationOrder);
+    
+    Set<DiscreteFactor> factors = reducedModel.getFactors();
+    
+    // 3. Eliminate variables according to the order
     for (String variableToEliminate : variableEliminationOrder) {
-      Set<DiscreteFactor> factorsWithVariable = factorsWithVariableInScope(factorsWithObservations, variableToEliminate);
-      factorsWithObservations.removeAll(factorsWithVariable);
+      Set<DiscreteFactor> factorsWithVariable = factorsWithVariableInScope(factors, variableToEliminate);
+      factors.removeAll(factorsWithVariable);
       
       DiscreteFactor jointDistribution = FactorUtil.jointDistribution(factorsWithVariable);
       DiscreteFactor marginalizedDistribution = jointDistribution
           .marginal(jointDistribution.getVariables().removeAll(variableToEliminate));
       
-      factorsWithObservations.add(marginalizedDistribution);
+      factors.add(marginalizedDistribution);
     }
     
-    return FactorUtil.jointDistribution(factorsWithObservations);
-  }
-  
-  protected Set<DiscreteFactor> processObservations(Set<DiscreteFactor> factors, Scope observedVariables, int[] observation) {
-    if (observedVariables == null || observedVariables.isEmpty()) {
-      return new HashSet<DiscreteFactor>(factors);
-    }
-    
-    Set<DiscreteFactor> replacements = new HashSet<DiscreteFactor>();
-    Set<DiscreteFactor> removals = new HashSet<DiscreteFactor>();
-    
-    
-    Iterator<DiscreteFactor> it = factors.iterator();
-    
-    while (it.hasNext()) {
-      DiscreteFactor factor = it.next();
-      
-      BitSet observedVariableToFactorScopeProjection = observedVariables.getProjection(factor.getVariables());
-      
-      if (observedVariableToFactorScopeProjection.cardinality() > 0) {
-        Scope reducedObservedVariables = observedVariables.intersect(factor.getVariables());
-        int[] reducedObservation = IndexCoder.projectAssignment(observation, observedVariableToFactorScopeProjection);
-        
-        replacements.add(factor.observation(reducedObservedVariables, reducedObservation));
-        removals.add(factor);
-      }
-    }
-    
-    Set<DiscreteFactor> result = new HashSet<DiscreteFactor>();
-    result.addAll(factors);
-    result.removeAll(removals);
-    result.addAll(replacements);
-    
-    return result;
+    // 4. Create joint distribution from remaining factors
+    return FactorUtil.jointDistribution(factors);
   }
   
   // TODO: make this method obsolete by using a more appropriate data structure for factors 
@@ -118,8 +100,8 @@ public class VariableEliminationInferencer implements ExactInferencer {
     return result;
   }
   
-  protected void validateEliminationOrder(Scope projection, List<String> variableEliminationOrder) {
-    for (DiscreteVariable modelVariable : graphicalModel.getScope().getVariables()) {
+  protected void validateEliminationOrder(GraphicalModel model, Scope projection, List<String> variableEliminationOrder) {
+    for (DiscreteVariable modelVariable : model.getScope().getVariables()) {
       boolean isProjectionVariable = projection.has(modelVariable);
       boolean isVariableToBeEliminated = variableEliminationOrder.contains(modelVariable.getId());
       
