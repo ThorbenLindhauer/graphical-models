@@ -65,12 +65,13 @@ public class IndexCoder {
       
       int offset = lowerCardinalities * projectedAssignment[i];
       
+      // number of blocks of subsequent assignments that have the projected value
       int numAssignmentBlocks = higherCardinalities;
       
       BitSet validAssignmentsForVariable = new BitSet(maxIndex);
       for (int j = 0; j < numAssignmentBlocks; j++) {
         for (int k = 0; k < lowerCardinalities; k++) {
-          validAssignmentsForVariable.set((j * lowerCardinalities * variableCardinalities[i]) + offset + k);
+          validAssignmentsForVariable.set((j * lowerCardinalities * variableCardinalities[varIndex]) + offset + k);
         }
       }
       
