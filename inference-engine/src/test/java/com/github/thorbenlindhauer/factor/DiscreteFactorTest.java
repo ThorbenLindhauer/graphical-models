@@ -123,6 +123,42 @@ public class DiscreteFactorTest {
   }
   
   @Test
+  public void testFactorProductWithConstantValueFactor() {
+    Scope variablesFactor1 = newVariables(new DiscreteVariable("A", 2), new DiscreteVariable("B", 3));
+    TableBasedDiscreteFactor factor1 = new TableBasedDiscreteFactor(variablesFactor1, 
+        new double[] {
+          1, 2, // B == 0
+          3, 4, // B == 1
+          5, 6, // B == 2
+       });
+    
+    Scope variablesFactor2 = newVariables();
+    TableBasedDiscreteFactor factor2 = new TableBasedDiscreteFactor(variablesFactor2, 
+        new double[] {
+          2
+        });
+    
+    TableBasedDiscreteFactor product = factor1.product(factor2);
+    assertThat(product.getValues()).hasSize(6);
+    assertThat(product.getValues()[0]).isEqualTo(2);
+    assertThat(product.getValues()[1]).isEqualTo(4);
+    assertThat(product.getValues()[2]).isEqualTo(6);
+    assertThat(product.getValues()[3]).isEqualTo(8);
+    assertThat(product.getValues()[4]).isEqualTo(10);
+    assertThat(product.getValues()[5]).isEqualTo(12);
+    
+    product = factor2.product(factor1);
+    assertThat(product.getValues()).hasSize(6);
+    assertThat(product.getValues()[0]).isEqualTo(2);
+    assertThat(product.getValues()[1]).isEqualTo(4);
+    assertThat(product.getValues()[2]).isEqualTo(6);
+    assertThat(product.getValues()[3]).isEqualTo(8);
+    assertThat(product.getValues()[4]).isEqualTo(10);
+    assertThat(product.getValues()[5]).isEqualTo(12);
+    
+  }
+  
+  @Test
   public void testFactorMarginalTwoVariables() {
     Scope variables = newVariables(new DiscreteVariable("A", 3), new DiscreteVariable("B", 3));
     TableBasedDiscreteFactor factor = new TableBasedDiscreteFactor(variables, 

@@ -19,8 +19,8 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
   protected double[] values;
   
   public TableBasedDiscreteFactor(Scope variables, double[] values) {
-    if (variables == null || variables.isEmpty()) {
-      throw new ModelStructureException("Factor must be defined over at least one variable");
+    if (variables == null) {
+      throw new ModelStructureException("Variables cannot be null");
     }
     
     this.variables = variables;
@@ -90,7 +90,7 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
   public TableBasedDiscreteFactor marginal(Scope scope) {
     Scope newScope = variables.intersect(scope);
     
-    if (variables.hasSameVariablesAs(scope)) {
+    if (scope.contains(variables)) {
       return this;
     }
     

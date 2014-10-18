@@ -81,6 +81,10 @@ public class Scope {
     return this.variables.containsKey(variable.getId());
   }
   
+  public boolean contains(Scope other) {
+    return this.variables.keySet().containsAll(other.variables.keySet());
+  }
+  
   public boolean has(String variableId) {
     return this.variables.containsKey(variableId);
   }
