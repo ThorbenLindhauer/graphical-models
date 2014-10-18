@@ -1,6 +1,5 @@
 package com.github.thorbenlindhauer.factor;
 
-import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,21 +36,52 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
     
     Scope newVariables = new Scope(newVars);
     
-    BitSet varsFactor1 = newVariables.getProjection(variables);
-    BitSet varsFactor2 = newVariables.getProjection(other.getVariables());
-    
     double[] newValues = new double[newVariables.getNumDistinctValues()];
     IndexCoder indexCoder = newVariables.getIndexCoder();
+    int[] newCardinalities = indexCoder.getCardinalities();
+    
+    IndexCoder thisIndexCoder = variables.getIndexCoder();
+    int[] thisVariableMapping = newVariables.createMapping(variables);
+    int[] thisStrides = thisIndexCoder.getStrides();
+    
+    IndexCoder otherIndexCoder = other.getVariables().getIndexCoder();
+    int[] otherVariableMapping = newVariables.createMapping(other.getVariables());
+    int[] otherStrides = otherIndexCoder.getStrides();
+    
+    int[] assignment = new int[newVariables.size()];
+    int thisIndex = 0;
+    int otherIndex = 0;
     
     for (int i = 0; i < newValues.length; i++) {
-      int[] assignment = indexCoder.getAssignmentForIndex(i);
-      int[] assignmentFactor1 = IndexCoder.projectAssignment(assignment, varsFactor1);
-      int[] assignmentFactor2 = IndexCoder.projectAssignment(assignment, varsFactor2);
+      newValues[i] = values[thisIndex] * other.getValueAtIndex(otherIndex);
       
-      double valueFactor1 = this.getValueForAssignment(assignmentFactor1);
-      double valueFactor2 = other.getValueForAssignment(assignmentFactor2);
-      newValues[i] = valueFactor1 * valueFactor2;
+      for (int j = 0; j < newVariables.size(); j++) {
+        assignment[j] = assignment[j] + 1;
+        if (assignment[j] == newCardinalities[j]) {
+          // TODO: probably expand thisStrides with thisVariablesMapping 
+          // before the loops such that the double indexing is not necessary
+          assignment[j] = 0;
+          if (thisVariableMapping[j] >= 0) {
+            thisIndex -= (newCardinalities[j] - 1) * thisStrides[thisVariableMapping[j]];
+          }
+          
+          if (otherVariableMapping[j] >= 0) {
+            otherIndex -= (newCardinalities[j] - 1) * otherStrides[otherVariableMapping[j]];
+          }
+        } else {
+          if (thisVariableMapping[j] >= 0) {
+            thisIndex += thisStrides[thisVariableMapping[j]];
+          }
+          
+          if (otherVariableMapping[j] >= 0) {
+            otherIndex += otherStrides[otherVariableMapping[j]];
+          }
+          
+          break;
+        }
+      }
     }
+    
     
     TableBasedDiscreteFactor newFactor = new TableBasedDiscreteFactor(newVariables, newValues);
     return newFactor;
@@ -60,18 +90,40 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
   public TableBasedDiscreteFactor marginal(Scope scope) {
     Scope newScope = variables.intersect(scope);
     
-    if (newScope.getVariableIds().equals(variables.getVariableIds())) {
+    if (variables.hasSameVariablesAs(scope)) {
       return this;
     }
     
     double[] newValues = new double[newScope.getNumDistinctValues()];
-    IndexCoder indexCoder = newScope.getIndexCoder();
-    
-    for (int i = 0; i < newValues.length; i++) {
-      int[] assignment = indexCoder.getAssignmentForIndex(i);
-      BitSet projection = this.variables.getProjection(newScope);
-      newValues[i] = sumValuesForAssignment(assignment, projection);
+    int newValuesIdx = 0;
+    int[] newStrides = newScope.getIndexCoder().getStrides();
+    int[] mapping = variables.createMapping(newScope);
+
+    int[] thisCardinalities = variables.getIndexCoder().getCardinalities();
+    int[] thisAssignment = new int[variables.size()];
+    for (int i = 0; i < values.length; i++) {
+      newValues[newValuesIdx] = newValues[newValuesIdx] + values[i];
+      
+      for (int j = 0; j < variables.size(); j++) {
+        thisAssignment[j] = thisAssignment[j] + 1;
+        if (thisAssignment[j] == thisCardinalities[j]) {
+          thisAssignment[j] = 0;
+          
+          if (mapping[j] >= 0) {
+            newValuesIdx -= (thisCardinalities[j] - 1) * newStrides[mapping[j]];
+          }
+          
+        } else {
+          if (mapping[j] >= 0) {
+            newValuesIdx += newStrides[mapping[j]];
+          }
+          
+          break;
+        }
+        
+      }
     }
+    
     
     return new TableBasedDiscreteFactor(newScope, newValues);
   }
@@ -79,7 +131,6 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
   // TODO: consider implementing this as a view on the original factor
   public TableBasedDiscreteFactor observation(Scope scope, int[] observedValues) {
     if (scope.getVariables().size() != observedValues.length) {
-      // TODO: add cardinality check
       throw new ModelStructureException("Observed variables and values do not match");
     }
     
@@ -87,16 +138,30 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
       return this;
     }
     
-    BitSet observedVariablesProjection = scope.getProjection(variables);
-    Scope reducedObservedVariables = scope.intersect(variables);
-    int[] reducedObservation = IndexCoder.projectAssignment(observedValues, observedVariablesProjection);
     
     double[] newValues = new double[values.length];
-    BitSet projection = variables.getProjection(reducedObservedVariables);
-    int[] indexesToRetain = variables.getIndexCoder().getIndexesForProjectedAssignment(reducedObservation, projection);
+    int[] mapping = variables.createMapping(scope);
     
-    for (int indexToRetain : indexesToRetain) {
-      newValues[indexToRetain] = values[indexToRetain];
+    for (int i = 0; i < values.length; i++) {
+      // TODO: improve this, potential for precomputation before the loop
+      boolean matches = true;
+      
+      for (int j = 0; j < mapping.length; j++) {
+        
+        if (mapping[j] >= 0) {
+          int assignmentValue = observedValues[mapping[j]];
+          int thisAssignmentValue = variables.getIndexCoder().getAssignmentAtPositionForIndex(i, j);
+          
+          if (assignmentValue != thisAssignmentValue) {
+            matches = false;
+            break;
+          }
+        }
+      }
+      
+      if (matches) {
+        newValues[i] = values[i];
+      }
     }
     
     TableBasedDiscreteFactor newFactor = new TableBasedDiscreteFactor(variables, newValues);
@@ -108,29 +173,19 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
     return variables;
   }
 
-
   public double[] getValues() {
     return values;
   }
 
-
   public double getValueForAssignment(int[] assignment) {
     int index = variables.getIndexCoder().getIndexForAssignment(assignment);
+    return getValueAtIndex(index);
+  }
+  
+  public double getValueAtIndex(int index) {
     return values[index];
   }
   
-  public double sumValuesForAssignment(int[] assignment, BitSet projection) {
-    int[] indexes = variables.getIndexCoder().getIndexesForProjectedAssignment(assignment, projection);
-    
-    double sum = 0.0d;
-    for (int index : indexes) {
-      sum += values[index];
-    }
-    
-    return sum;
-  }
-
-
   public TableBasedDiscreteFactor normalize() {
     double valueSum = 0.0d;
     
@@ -156,7 +211,5 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
     
     return sb.toString();
   }
-
-
 
 }

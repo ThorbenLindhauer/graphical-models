@@ -21,5 +21,7 @@ public interface DiscreteFactor {
   
   double getValueForAssignment(int[] assignment);
   
+  double getValueAtIndex(int index);
+  
   
 }

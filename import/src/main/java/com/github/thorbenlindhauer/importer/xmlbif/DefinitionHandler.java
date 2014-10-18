@@ -1,7 +1,6 @@
 package com.github.thorbenlindhauer.importer.xmlbif;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.stream.XMLEventReader;
@@ -10,7 +9,6 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 import com.github.thorbenlindhauer.factor.TableBasedDiscreteFactor;
-import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.IndexCoder;
 import com.github.thorbenlindhauer.variable.IndexMapper;
 import com.github.thorbenlindhauer.variable.Scope;
@@ -58,16 +56,12 @@ public class DefinitionHandler implements XmlElementHandler {
     }
     
     Scope scope = parse.getCurrentParse().scopeFor(allVariables.toArray(new String[]{}));
-    List<String> orderedVariableIds = new ArrayList<String>();
-    Iterator<DiscreteVariable> canonicalIterator = scope.canonicalIterator();
-    while (canonicalIterator.hasNext()) {
-      orderedVariableIds.add(canonicalIterator.next().getId());
-    }
+    String[] orderedVariables = scope.getVariableIds();
     
     int[] variableMapping = new int[allVariables.size()];
     
     for (int i = 0; i < variableMapping.length; i++) {
-      int mappedIndex = allVariables.indexOf(orderedVariableIds.get(i));
+      int mappedIndex = allVariables.indexOf(orderedVariables[i]);
       variableMapping[i] = mappedIndex;
     }
     

@@ -1,5 +1,6 @@
 package com.github.thorbenlindhauer.inference;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -44,12 +45,14 @@ public class VariableEliminationInferencer implements ExactInferencer {
   }
   
   protected GraphicalModel reduceModelByObservations(Scope observedVariables, int[] observation) {
-    Scope newScope = graphicalModel.getScope().removeAll(observedVariables);
+    Scope newScope = graphicalModel.getScope().reduceBy(observedVariables);
     
     Set<DiscreteFactor> newFactors = new HashSet<DiscreteFactor>();
     
     for (DiscreteFactor factor : graphicalModel.getFactors()) {
-      newFactors.add(factor.observation(observedVariables, observation).marginal(newScope));
+      DiscreteFactor factorWithObservation = factor.observation(observedVariables, observation);
+      DiscreteFactor marginalizedFactor = factorWithObservation.marginal(newScope);
+      newFactors.add(marginalizedFactor);
     }
     
     GraphicalModel newModel = new GraphicalModel(newScope, newFactors);
@@ -64,7 +67,7 @@ public class VariableEliminationInferencer implements ExactInferencer {
     }
     
     // 2. determine a variable elimination order for the new model
-    Collection<String> variablesToEliminate = reducedModel.getScope().removeAll(projection).getVariableIds();
+    Collection<String> variablesToEliminate = Arrays.asList(reducedModel.getScope().reduceBy(projection).getVariableIds());
     List<String> variableEliminationOrder = variableEliminationStrategy.getEliminationOrder(reducedModel, variablesToEliminate);
     validateEliminationOrder(reducedModel, projection, variableEliminationOrder);
     
@@ -77,7 +80,7 @@ public class VariableEliminationInferencer implements ExactInferencer {
       
       DiscreteFactor jointDistribution = FactorUtil.jointDistribution(factorsWithVariable);
       DiscreteFactor marginalizedDistribution = jointDistribution
-          .marginal(jointDistribution.getVariables().removeAll(variableToEliminate));
+          .marginal(jointDistribution.getVariables().reduceBy(variableToEliminate));
       
       factors.add(marginalizedDistribution);
     }

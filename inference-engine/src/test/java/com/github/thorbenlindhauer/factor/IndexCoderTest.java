@@ -1,8 +1,6 @@
 package com.github.thorbenlindhauer.factor;
 
-import static org.assertj.core.api.Assertions.*;
-
-import java.util.BitSet;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
@@ -82,34 +80,6 @@ public class IndexCoderTest {
     assertThat(coder.getAssignmentForIndex(27)).isEqualTo(new int[] {0, 4, 1});
     assertThat(coder.getAssignmentForIndex(28)).isEqualTo(new int[] {1, 4, 1});
     assertThat(coder.getAssignmentForIndex(29)).isEqualTo(new int[] {2, 4, 1});
-  }
-  
-  @Test
-  public void testIndexesForSingleVariableProjectedAssignment() {
-    int[] variableCardinalities = new int[] {3, 5, 2};
-    IndexCoder coder = new IndexCoder(variableCardinalities);
-    
-    // projection to the value 0 of the first variable
-    BitSet projection = new BitSet();
-    projection.set(0);
-    int[] indexes = coder.getIndexesForProjectedAssignment(new int[]{ 0 }, projection);
-    
-    assertThat(indexes).containsExactly(0, 3, 6, 9, 12, 15, 18, 21, 24, 27);
-    
-    // projection to the value 3 of the second variable
-    projection = new BitSet();
-    projection.set(1);
-    indexes = coder.getIndexesForProjectedAssignment(new int[]{ 3 }, projection);
-    
-    assertThat(indexes).containsExactly(9, 10, 11, 24, 25, 26);
-    
-    // projection to the value 1 of the third variable
-    projection = new BitSet();
-    projection.set(2);
-    indexes = coder.getIndexesForProjectedAssignment(new int[]{ 1 }, projection);
-    
-    assertThat(indexes).containsExactly(15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
-        25, 26, 27, 28, 29);
   }
   
   // TODO: test sanity of input?

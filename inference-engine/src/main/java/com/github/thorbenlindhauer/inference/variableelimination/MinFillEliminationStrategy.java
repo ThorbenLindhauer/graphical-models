@@ -1,6 +1,7 @@
 package com.github.thorbenlindhauer.inference.variableelimination;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,7 +37,7 @@ public class MinFillEliminationStrategy implements VariableEliminationStrategy {
           connectedVariables.put(variableId, connectedVariablesForCurrent);
         }
         
-        connectedVariablesForCurrent.addAll(scope.getVariableIds());
+        connectedVariablesForCurrent.addAll(Arrays.asList(scope.getVariableIds()));
         connectedVariablesForCurrent.remove(variableId);
       }
     }

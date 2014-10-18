@@ -1,14 +1,11 @@
 package com.github.thorbenlindhauer.variable;
 
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.TreeSet;
 
 import com.github.thorbenlindhauer.exception.ModelStructureException;
 
@@ -17,68 +14,67 @@ import com.github.thorbenlindhauer.exception.ModelStructureException;
 //TODO: implement Map interface?
 public class Scope {
 
-  protected SortedMap<String, DiscreteVariable> variables;
+  protected Map<String, DiscreteVariable> variables;
+  protected String[] sortedVariableIds;
   protected IndexCoder indexCoder;
   protected int distinctValues;
   
   public Scope(Collection<DiscreteVariable> variables) {
-    this.variables = new TreeMap<String, DiscreteVariable>();
+    this.variables = new HashMap<String, DiscreteVariable>();
     
     for (DiscreteVariable variable : variables) {
       this.variables.put(variable.getId(), variable);
     }
     
+    sortedVariableIds = new TreeSet<String>(this.variables.keySet()).toArray(new String[]{});
+    
     int[] cardinalities = new int[this.variables.size()];
     
-    int cardId = 0;
     distinctValues = 1;
-    for (DiscreteVariable variable : this.variables.values()) {
-      cardinalities[cardId++] = variable.getCardinality();
+    for (int i = 0; i < sortedVariableIds.length; i++) {
+      DiscreteVariable variable = this.variables.get(sortedVariableIds[i]);
+      cardinalities[i] = variable.getCardinality();
       distinctValues *= variable.getCardinality();
     }
     
     indexCoder = new IndexCoder(cardinalities);
   }
   
-  
-  public void addAll(Collection<DiscreteVariable> variablesToAdd) {
-    for (DiscreteVariable variableToAdd : variablesToAdd) {
-      variables.put(variableToAdd.getId(), variableToAdd);
-    }
-  }
-  
-  public Iterator<DiscreteVariable> canonicalIterator() {
-    return variables.values().iterator();
-  }
-  
   /**
-   * Returns a BitSet that has a 1 at every place that corresponds to a variable index that is part of the argument.
-   * @param variablesToBeProjected
-   * @return
+   * Returns an array of the length that this scope has variables.
+   * Each array entry is an index into the other scope's variables or -1 if the other scope
+   * does not have this variable.
    */
-  public BitSet getProjection(Scope variablesToBeProjected) {
-    BitSet projection = new BitSet();
-    int currentBit = 0;
-    Iterator<DiscreteVariable> canonicalIt = canonicalIterator();
-    while (canonicalIt.hasNext()) {
-      DiscreteVariable nextVar = canonicalIt.next();
-      
-      if (variablesToBeProjected.has(nextVar)) {
-        projection.set(currentBit);
+  public int[] createMapping(Scope other) {
+    int[] mapping = new int[sortedVariableIds.length];
+    
+    for (int i = 0; i < sortedVariableIds.length; i++) {
+      String variable = sortedVariableIds[i];
+      mapping[i] = -1;
+      if (other.has(variable)) {
+        // TODO: improve this by caching a mapping of variable id to position
+        for (int j = 0; j < other.sortedVariableIds.length; j++) {
+          String otherVariable = other.sortedVariableIds[j];
+          if (variable.equals(otherVariable)) {
+            mapping[i] = j;
+          }
+        }
       }
-      
-      currentBit++;
     }
     
-    return projection;
+    return mapping;
   }
   
   public Collection<DiscreteVariable> getVariables() {
     return new HashSet<DiscreteVariable>(variables.values());
   }
   
-  public Collection<String> getVariableIds() {
-    return new HashSet<String>(variables.keySet());
+  public String[] getVariableIds() {
+    return sortedVariableIds;
+  }
+  
+  public boolean hasSameVariablesAs(Scope other) {
+    return variables.keySet().equals(other.variables.keySet());
   }
   
   public boolean has(DiscreteVariable variable) {
@@ -91,6 +87,10 @@ public class Scope {
   
   public DiscreteVariable get(String variableId) {
     return variables.get(variableId);
+  }
+  
+  public String getVariableId(int index) {
+    return sortedVariableIds[index];
   }
   
   public IndexCoder getIndexCoder() {
@@ -132,7 +132,10 @@ public class Scope {
     
   }
   
-  public Scope removeAll(String... variableIds) {
+  /**
+   * Returns a new, reduced scope.
+   */
+  public Scope reduceBy(String... variableIds) {
     Map<String, DiscreteVariable> newVariables = new HashMap<String, DiscreteVariable>(variables);
    
     for (String variableId : variableIds) {
@@ -142,10 +145,15 @@ public class Scope {
     return new Scope(newVariables.values());
   }
   
-  public Scope removeAll(Scope other) {
-    Collection<String> variables = other.getVariableIds();
-    
-    return removeAll(variables.toArray(new String[variables.size()]));
+  /**
+   * Returns a new, reduced scope.
+   */
+  public Scope reduceBy(Scope other) {
+    return reduceBy(other.sortedVariableIds);
+  }
+  
+  public int size() {
+    return sortedVariableIds.length;
   }
   
   public String toString() {
