@@ -1,6 +1,7 @@
 package com.github.thorbenlindhauer.factor;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
 
 import com.github.thorbenlindhauer.variable.DiscreteVariable;

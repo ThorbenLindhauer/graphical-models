@@ -85,11 +85,22 @@ public class Scope {
     return this.variables.keySet().containsAll(other.variables.keySet());
   }
   
+  public boolean contains(String... variableIds) {
+    Set<String> variableIdSet = variables.keySet();
+    for (String variableId : variableIds) {
+      if (!variableIdSet.contains(variableId)) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+  
   public boolean has(String variableId) {
     return this.variables.containsKey(variableId);
   }
   
-  public DiscreteVariable get(String variableId) {
+  public DiscreteVariable getVariable(String variableId) {
     return variables.get(variableId);
   }
   
@@ -133,7 +144,13 @@ public class Scope {
     }
     
     return new Scope(retainedVariables);
+  }
+  
+  public Scope union(Scope other) {
+    Set<DiscreteVariable> newVariables = new HashSet<DiscreteVariable>(variables.values());
+    newVariables.addAll(other.variables.values());
     
+    return new Scope(newVariables);
   }
   
   /**

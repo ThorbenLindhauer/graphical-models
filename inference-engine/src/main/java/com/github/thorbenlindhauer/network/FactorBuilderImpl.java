@@ -23,7 +23,7 @@ public class FactorBuilderImpl implements FactorBuilder {
   
   public FactorBuilder scope(String... variableIds) {
     for (String variableId : variableIds) {
-      DiscreteVariable variable = graphScope.get(variableId);
+      DiscreteVariable variable = graphScope.getVariable(variableId);
       
       if (variable == null) {
         throw new ModelStructureException("Variable " + variableId + " not defined in scope of graph.");
