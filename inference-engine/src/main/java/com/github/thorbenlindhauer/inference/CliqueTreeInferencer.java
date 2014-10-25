@@ -4,22 +4,23 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import com.github.thorbenlindhauer.cluster.Cluster;
-import com.github.thorbenlindhauer.cluster.ClusterGraph;
-import com.github.thorbenlindhauer.cluster.Edge;
-import com.github.thorbenlindhauer.cluster.Message;
+import com.github.thorbenlindhauer.cluster.messagepassing.Message;
+import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingCluster;
+import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingClusterGraph;
+import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingEdge;
 import com.github.thorbenlindhauer.exception.ModelStructureException;
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.variable.Scope;
 
 //TODO: think about interface "IncrementalInferencer" that allows to submit observations incrementally
-public class CliqueTreeInferencer implements ExactInferencer {
+public class CliqueTreeInferencer<R extends MessagePassingCluster<R, S, T>, 
+S extends Message<R, S, T>, T extends MessagePassingEdge<R, S, T>> implements ExactInferencer {
   
-  protected ClusterGraph clusterGraph;
-  protected Cluster rootCluster;
+  protected MessagePassingClusterGraph<R, S, T> clusterGraph;
+  protected R rootCluster;
   protected boolean messagesPropagated = false;
   
-  public CliqueTreeInferencer(ClusterGraph clusterGraph, Cluster rootCluster) {
+  public CliqueTreeInferencer(MessagePassingClusterGraph<R, S, T> clusterGraph, R rootCluster) {
     this.clusterGraph = clusterGraph;
     this.rootCluster = rootCluster;
   }
@@ -44,7 +45,7 @@ public class CliqueTreeInferencer implements ExactInferencer {
   protected DiscreteFactor getClusterFactorContainingScope(Scope scope) {
     ensureMessagesPropagated();
     
-    for (Cluster cluster : clusterGraph.getClusters()) {
+    for (R cluster : clusterGraph.getClusters()) {
       if (cluster.getScope().contains(scope)) {
         return cluster.getPotential().marginal(scope);
       }
@@ -62,11 +63,11 @@ public class CliqueTreeInferencer implements ExactInferencer {
   
   protected void propagateMessages() {
     // forward pass (beginning at leaves)
-    Set<Message> initialForwardMessages = new HashSet<Message>();
-    for (Cluster cluster : clusterGraph.getClusters()) {
+    Set<S> initialForwardMessages = new HashSet<S>();
+    for (R cluster : clusterGraph.getClusters()) {
       // determine the initial messages
       if (cluster != rootCluster && cluster.getEdges().size() == 1) {
-        Edge outEdge = cluster.getEdges().iterator().next();
+        T outEdge = cluster.getEdges().iterator().next();
         initialForwardMessages.add(outEdge.getMessageFrom(cluster));
       }
     }
@@ -74,8 +75,8 @@ public class CliqueTreeInferencer implements ExactInferencer {
     executeMessagePass(initialForwardMessages);
     
     // backward pass (beginning at root)
-    Set<Message> initialBackwardMessages = new HashSet<Message>();
-    for (Edge rootOutEdge : rootCluster.getEdges()) {
+    Set<S> initialBackwardMessages = new HashSet<S>();
+    for (T rootOutEdge : rootCluster.getEdges()) {
       initialBackwardMessages.add(rootOutEdge.getMessageFrom(rootCluster));
     }
     
@@ -84,27 +85,27 @@ public class CliqueTreeInferencer implements ExactInferencer {
     messagesPropagated = true;
   }
   
-  protected void executeMessagePass(Set<Message> initialMessages) {
-    Set<Edge> processedEdges = new HashSet<Edge>();
-    Set<Message> currentMessages = initialMessages;
+  protected void executeMessagePass(Set<S> initialMessages) {
+    Set<T> processedEdges = new HashSet<T>();
+    Set<S> currentMessages = initialMessages;
     
     while (!currentMessages.isEmpty()) {
-      Iterator<Message> it = currentMessages.iterator();
-      Message currentMessage = it.next();
+      Iterator<S> it = currentMessages.iterator();
+      S currentMessage = it.next();
       it.remove();
       
       currentMessage.update();
       processedEdges.add(currentMessage.getEdge());
       
-      Cluster targetCluster = currentMessage.getTargetCluster();
+      R targetCluster = currentMessage.getTargetCluster();
       if (targetCluster != rootCluster) {
-        Set<Edge> targetOutEdges = targetCluster.getInEdges(currentMessage.getEdge());
+        Set<T> targetOutEdges = targetCluster.getOtherEdges(currentMessage.getEdge());
         
-        for (Edge targetOutEdge : targetOutEdges) {
+        for (T targetOutEdge : targetOutEdges) {
           // only add the message for the out edge, if it has not yet been computed and it can be computed right away
           // (ie. has no more pending in messages)
           if (!processedEdges.contains(targetOutEdge) && 
-              processedEdges.containsAll(targetCluster.getInEdges(targetOutEdge))) {
+              processedEdges.containsAll(targetCluster.getOtherEdges(targetOutEdge))) {
             currentMessages.add(targetOutEdge.getMessageFrom(targetCluster));
           }
         }

@@ -9,11 +9,7 @@
     <module>inference-engine</module>
     <module>import</module>
   </modules>
-  
-  <properties>
-    <graphmod.version>0.0.1-SNAPSHOT</graphmod.version>
-  </properties>
-  
+
   <dependencyManagement>
     <dependencies>
       <dependency>

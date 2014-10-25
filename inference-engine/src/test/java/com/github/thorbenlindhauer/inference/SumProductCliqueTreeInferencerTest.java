@@ -9,43 +9,45 @@ import java.util.Set;
 import org.assertj.core.util.Sets;
 import org.junit.Before;
 
-import com.github.thorbenlindhauer.cluster.Cluster;
-import com.github.thorbenlindhauer.cluster.ClusterGraph;
+import com.github.thorbenlindhauer.cluster.messagepassing.SumProductCluster;
+import com.github.thorbenlindhauer.cluster.messagepassing.SumProductClusterGraph;
+import com.github.thorbenlindhauer.cluster.messagepassing.SumProductEdge;
+import com.github.thorbenlindhauer.cluster.messagepassing.SumProductMessage;
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.Scope;
 
-public class CliqueTreeInferencerTest extends ExactInferencerTest {
+public class SumProductCliqueTreeInferencerTest extends ExactInferencerTest {
 
-  protected ClusterGraph clusterGraph;
-  protected Cluster rootCluster;
+  protected SumProductClusterGraph clusterGraph;
+  protected SumProductCluster rootCluster;
   
   @Before
   public void setUpClusterGraph() {
-    Set<Cluster> clusters = new HashSet<Cluster>();
+    Set<SumProductCluster> clusters = new HashSet<SumProductCluster>();
 
     // constructs a bethe cluster graph
     // in general, a bethe graph is not a tree but for this test case it is
     
     // create a cluster for each variable
-    Map<String, Cluster> variableClusters = new HashMap<String, Cluster>();
+    Map<String, SumProductCluster> variableClusters = new HashMap<String, SumProductCluster>();
     for (DiscreteVariable variable : model.getScope().getVariables()) {
-      Cluster variableCluster = new Cluster(new Scope(Arrays.asList(variable)));
+      SumProductCluster variableCluster = new SumProductCluster(new Scope(Arrays.asList(variable)));
       clusters.add(variableCluster);
       variableClusters.put(variable.getId(), variableCluster);
     }
     
     // create a cluster for each factor
-    Set<Cluster> factorClusters = new HashSet<Cluster>();
+    Set<SumProductCluster> factorClusters = new HashSet<SumProductCluster>();
     for (DiscreteFactor factor : model.getFactors()) {
-      Cluster factorCluster = new Cluster(Sets.newLinkedHashSet(factor));
+      SumProductCluster factorCluster = new SumProductCluster(Sets.newLinkedHashSet(factor));
       clusters.add(factorCluster);
       factorClusters.add(factorCluster);
     }
     
-    clusterGraph = new ClusterGraph(clusters);
+    clusterGraph = new SumProductClusterGraph(clusters);
     
-    for (Cluster factorCluster : factorClusters) {
+    for (SumProductCluster factorCluster : factorClusters) {
       for (String variableId : factorCluster.getScope().getVariableIds()) {
         clusterGraph.connect(factorCluster, variableClusters.get(variableId));
       }
@@ -60,7 +62,7 @@ public class CliqueTreeInferencerTest extends ExactInferencerTest {
   
   @Override
   protected ExactInferencer getInferencer() {
-    return new CliqueTreeInferencer(clusterGraph, rootCluster);
+    return new CliqueTreeInferencer<SumProductCluster, SumProductMessage, SumProductEdge>(clusterGraph, rootCluster);
   }
 
 }

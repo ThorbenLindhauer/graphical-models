@@ -1,4 +1,4 @@
-package com.github.thorbenlindhauer.cluster;
+package com.github.thorbenlindhauer.cluster.messagepassing;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -11,13 +11,13 @@ import com.github.thorbenlindhauer.factor.DiscreteFactor;
  * 
  * @author Thorben
  */
-public class Message {
+public class SumProductMessage extends AbstractMessage<SumProductCluster, SumProductMessage, SumProductEdge> {
 
-  protected Cluster sourceCluster;
-  protected Edge edge;
+  protected SumProductCluster sourceCluster;
   protected DiscreteFactor potential;
   
-  public Message(Cluster cluster, Edge edge) {
+  public SumProductMessage(SumProductCluster cluster, SumProductEdge edge) {
+    super(edge);
     if (!edge.connects(cluster)) {
       throw new ModelStructureException("Invalid message: Cluster " + cluster + " is not involved in edge " + edge);
     }
@@ -27,17 +27,17 @@ public class Message {
   }
   
   public void update() {
-    Set<Message> inMessages = new HashSet<Message>();
-    Set<Edge> inEdges = sourceCluster.getInEdges(edge);
+    Set<SumProductMessage> inMessages = new HashSet<SumProductMessage>();
+    Set<SumProductEdge> inEdges = sourceCluster.getOtherEdges(edge);
     
-    for (Edge inEdge : inEdges) {
+    for (SumProductEdge inEdge : inEdges) {
       inMessages.add(inEdge.getMessageFrom(inEdge.getConnectedCluster(sourceCluster)));
     }
     
     potential = sourceCluster.getJointFactor();
     
     // ignore null potentials
-    for (Message inMessage : inMessages) {
+    for (SumProductMessage inMessage : inMessages) {
       if (potential == null) {
         potential = inMessage.potential;
       } else if (inMessage.potential != null) {
@@ -55,15 +55,11 @@ public class Message {
     return potential;
   }
   
-  public Cluster getTargetCluster() {
+  public SumProductCluster getTargetCluster() {
     return edge.getConnectedCluster(sourceCluster);
   }
   
-  public Cluster getSourceCluster() {
+  public SumProductCluster getSourceCluster() {
     return sourceCluster;
-  }
-  
-  public Edge getEdge() {
-    return edge;
   }
 }

@@ -1,34 +1,24 @@
-package com.github.thorbenlindhauer.cluster;
+package com.github.thorbenlindhauer.cluster.messagepassing;
 
 import com.github.thorbenlindhauer.exception.ModelStructureException;
-import com.github.thorbenlindhauer.variable.Scope;
 
-public class Edge {
+public class SumProductEdge extends AbstractEdge<SumProductCluster, SumProductMessage, SumProductEdge> {
 
-  protected Scope scope;
-  protected Cluster cluster1;
   /** message from cluster1 -> cluster2*/
-  protected Message message1;
+  protected SumProductMessage message1;
   
-  protected Cluster cluster2;
   /** message from cluster2 -> cluster2*/
-  protected Message message2;
+  protected SumProductMessage message2;
   
-  public Edge(Cluster cluster1, Cluster cluster2) {
-    this.cluster1 = cluster1;
-    this.message1 = new Message(cluster1, this);
-    
-    this.cluster2 = cluster2;
-    this.message2 = new Message(cluster2, this);
+  public SumProductEdge(SumProductCluster cluster1, SumProductCluster cluster2) {
+    super(cluster1, cluster2);
+    this.message1 = new SumProductMessage(cluster1, this);
+    this.message2 = new SumProductMessage(cluster2, this);
     
     this.scope = cluster1.getScope().intersect(cluster2.getScope());
   }
   
-  public Scope getScope() {
-    return scope;
-  }
-  
-  public Cluster getConnectedCluster(Cluster sourceCluster) {
+  public SumProductCluster getConnectedCluster(SumProductCluster sourceCluster) {
     if (cluster1 == sourceCluster) {
       return cluster2;
     } else if (cluster2 == sourceCluster) {
@@ -38,7 +28,7 @@ public class Edge {
     }
   }
   
-  public Message getMessageFrom(Cluster sourceCluster) {
+  public SumProductMessage getMessageFrom(SumProductCluster sourceCluster) {
     if (cluster1 == sourceCluster) {
       return message1;
     } else if (cluster2 == sourceCluster) {
@@ -48,7 +38,7 @@ public class Edge {
     }
   }
   
-  public Message getMessageTo(Cluster targetCluster) {
+  public SumProductMessage getMessageTo(SumProductCluster targetCluster) {
     if (cluster1 == targetCluster) {
       return message2;
     } else if (cluster2 == targetCluster) {
@@ -58,7 +48,7 @@ public class Edge {
     }
   }
   
-  public boolean connects(Cluster cluster) {
+  public boolean connects(SumProductCluster cluster) {
     return cluster1 == cluster || cluster2 == cluster;
   }
 }

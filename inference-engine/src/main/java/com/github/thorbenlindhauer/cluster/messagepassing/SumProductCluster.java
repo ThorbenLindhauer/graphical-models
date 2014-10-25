@@ -1,24 +1,22 @@
-package com.github.thorbenlindhauer.cluster;
+package com.github.thorbenlindhauer.cluster.messagepassing;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.github.thorbenlindhauer.exception.ModelStructureException;
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.factor.FactorUtil;
 import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.Scope;
 
-public class Cluster {
+public class SumProductCluster extends AbstractCluster<SumProductCluster, SumProductMessage, SumProductEdge> {
 
-  protected Scope scope;
   protected Set<DiscreteFactor> factors;
   protected DiscreteFactor jointFactor;
-  protected DiscreteFactor potential;
-  protected Set<Edge> edges;
   
-  public Cluster(Scope scope, Set<DiscreteFactor> factors) {
+  public SumProductCluster(Scope scope, Set<DiscreteFactor> factors) {
+    super(scope);
+    
     // initialize scope from factors
     if (scope == null) {
       this.scope = new Scope(Collections.<DiscreteVariable>emptyList());
@@ -31,14 +29,13 @@ public class Cluster {
     }
     
     this.factors = factors;
-    this.edges = new HashSet<Edge>();
   }
   
-  public Cluster(Scope scope) {
+  public SumProductCluster(Scope scope) {
     this(scope, new HashSet<DiscreteFactor>());
   }
   
-  public Cluster(Set<DiscreteFactor> factors) {
+  public SumProductCluster(Set<DiscreteFactor> factors) {
     this(null, factors);
   }
   
@@ -57,15 +54,13 @@ public class Cluster {
     return jointFactor;
   }
   
-  /**
-   * Incoming messages * joint factor
-   */
-  public DiscreteFactor getPotential() {
+  @Override
+  protected void ensurePotentialInitialized() {
     if (potential == null) {
       potential = getJointFactor();
       
-      for (Edge edge : edges) {
-        Message inMessage = edge.getMessageTo(this);
+      for (SumProductEdge edge : edges) {
+        SumProductMessage inMessage = edge.getMessageTo(this);
         DiscreteFactor messagePotential = inMessage.getPotential();
         
         // ignore null potentials
@@ -76,35 +71,13 @@ public class Cluster {
         }
       }
     }
-    
-    return potential;
   }
   
-  public Scope getScope() {
-    return scope;
-  }
-  
-  public Edge connectTo(Cluster other) {
-    Edge newEdge = new Edge(this, other);
+  public SumProductEdge connectTo(SumProductCluster other) {
+    SumProductEdge newEdge = new SumProductEdge(this, other);
     this.edges.add(newEdge);
     other.edges.add(newEdge);
     return newEdge;
   }
   
-  // TODO: rename this, not necessarily "inEdges" but simply "all other edges"
-  public Set<Edge> getInEdges(Edge outEdge) {
-    // TODO: cache this?
-    Set<Edge> inEdges = new HashSet<Edge>(edges);
-    boolean contained = inEdges.remove(outEdge);
-    
-    if (!contained) {
-      throw new ModelStructureException("Out edge " + outEdge + " is not connected to this cluster");
-    }
-    
-    return inEdges;
-  }
-  
-  public Set<Edge> getEdges() {
-    return edges;
-  }
 }
