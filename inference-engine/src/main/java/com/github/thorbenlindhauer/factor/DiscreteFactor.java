@@ -7,6 +7,8 @@ public interface DiscreteFactor {
 
   DiscreteFactor product(DiscreteFactor other);
   
+  DiscreteFactor division(DiscreteFactor other);
+  
   /**
    * @param scope variables to keep
    * @return

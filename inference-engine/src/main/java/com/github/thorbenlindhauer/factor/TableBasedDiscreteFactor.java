@@ -1,8 +1,10 @@
 package com.github.thorbenlindhauer.factor;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.github.thorbenlindhauer.exception.FactorOperationException;
 import com.github.thorbenlindhauer.exception.ModelStructureException;
 import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.IndexCoder;
@@ -82,6 +84,63 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
       }
     }
     
+    
+    TableBasedDiscreteFactor newFactor = new TableBasedDiscreteFactor(newVariables, newValues);
+    return newFactor;
+  }
+  
+  // TODO: good candidate for in-place computation
+  public TableBasedDiscreteFactor division(DiscreteFactor other) {
+    if (!variables.contains(other.getVariables().getVariableIds())) {
+      throw new FactorOperationException("Divisor scope " + other.getVariables() + " is not a subset of" +
+      		" this factor's scope " + variables);
+    }
+    
+    Scope newVariables = variables;
+    
+    double[] newValues = Arrays.copyOf(values, values.length);
+    
+    int[] assignment = new int[newVariables.size()];
+    int otherIndex = 0;
+    
+    IndexCoder indexCoder = newVariables.getIndexCoder();
+    int[] cardinalities = indexCoder.getCardinalities();
+    
+    IndexCoder otherIndexCoder = other.getVariables().getIndexCoder();
+    int[] otherVariableMapping = newVariables.createMapping(other.getVariables());
+    int[] otherStrides = otherIndexCoder.getStrides();
+    
+    for (int i = 0; i < newValues.length; i++) {
+      double otherValue = other.getValueAtIndex(otherIndex);
+      
+      if (otherValue == 0) {
+        if (newValues[i] != 0) {
+          throw new FactorOperationException("Invalid division operation for assignment " + assignment 
+              + ": " + newValues[i] + " / " + otherValue);
+        }
+        // no else branch: if newValues[i] == 0, then it is not changed
+        
+      } else {
+        newValues[i] = newValues[i] / other.getValueAtIndex(otherIndex);
+      }
+      
+      for (int j = 0; j < newVariables.size(); j++) {
+        assignment[j] = assignment[j] + 1;
+        if (assignment[j] == cardinalities[j]) {
+          assignment[j] = 0;
+          
+          if (otherVariableMapping[j] >= 0) {
+            otherIndex -= (cardinalities[j] - 1) * otherStrides[otherVariableMapping[j]];
+          }
+        } else {
+          if (otherVariableMapping[j] >= 0) {
+            otherIndex += otherStrides[otherVariableMapping[j]];
+          }
+          
+          break;
+        }
+      }
+    }
     
     TableBasedDiscreteFactor newFactor = new TableBasedDiscreteFactor(newVariables, newValues);
     return newFactor;

@@ -1,6 +1,7 @@
 package com.github.thorbenlindhauer.factor;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -8,6 +9,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import com.github.thorbenlindhauer.exception.FactorOperationException;
 import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.Scope;
 
@@ -331,6 +333,173 @@ public class DiscreteFactorTest {
         13, 0, 0, // B == 1, C == 1
         16, 0, 0  // B == 2, C == 1
      });
+  }
+  
+  @Test
+  public void testFactorDivision() {
+    Scope variablesFactor1 = newVariables(new DiscreteVariable("A", 2), new DiscreteVariable("B", 3));
+    TableBasedDiscreteFactor factor1 = new TableBasedDiscreteFactor(variablesFactor1, 
+        new double[] {
+          1, 2, // B == 0
+          3, 4, // B == 1
+          5, 6  // B == 2
+       });
+    
+    Scope variablesFactor2 = newVariables(new DiscreteVariable("B", 3));
+    TableBasedDiscreteFactor factor2 = new TableBasedDiscreteFactor(variablesFactor2, 
+        new double[] {
+          1, 2, 3
+        });
+    
+    TableBasedDiscreteFactor quotient = factor1.division(factor2);
+    Collection<DiscreteVariable> newVariables = quotient.getVariables().getVariables();
+    assertThat(newVariables).hasSize(2);
+    assertThat(newVariables).containsAll(variablesFactor1.getVariables());
+    
+    double[] newValues = quotient.getValues();
+    double[] factor1Values = factor1.getValues();
+    double[] factor2Values = factor2.getValues();
+    
+    assertThat(newValues[0]).isEqualTo(factor1Values[0] / factor2Values[0]); // a = 0, b = 0
+    assertThat(newValues[1]).isEqualTo(factor1Values[1] / factor2Values[0]); // a = 1, b = 0
+    assertThat(newValues[2]).isEqualTo(factor1Values[2] / factor2Values[1]); // a = 0, b = 1
+    assertThat(newValues[3]).isEqualTo(factor1Values[3] / factor2Values[1]);
+    assertThat(newValues[4]).isEqualTo(factor1Values[4] / factor2Values[2]);
+    assertThat(newValues[5]).isEqualTo(factor1Values[5] / factor2Values[2]);
+  }
+  
+  @Test
+  public void testFactorDivisionCase2() {
+    Scope variablesFactor1 = newVariables(new DiscreteVariable("A", 2), new DiscreteVariable("B", 3), new DiscreteVariable("C", 3));
+    TableBasedDiscreteFactor factor1 = new TableBasedDiscreteFactor(variablesFactor1, 
+        new double[] {
+          1, 2,   // B == 0, C == 0
+          3, 4,   // B == 1, C == 0
+          5, 6,   // B == 2, C == 0
+          7, 8,   // B == 0, C == 1
+          9, 10,  // B == 1, C == 1
+          11, 12, // B == 2, C == 1
+          13, 14, // B == 0, C == 2
+          15, 16, // B == 1, C == 2
+          17, 18  // B == 2, C == 2
+       });
+    
+    Scope variablesFactor2 = newVariables(new DiscreteVariable("A", 2), new DiscreteVariable("C", 3));
+    TableBasedDiscreteFactor factor2 = new TableBasedDiscreteFactor(variablesFactor2, 
+        new double[] {
+          1, 2, // C == 0
+          3, 4, // C == 1
+          5, 6  // C == 2
+        });
+    
+    TableBasedDiscreteFactor quotient = factor1.division(factor2);
+    Collection<DiscreteVariable> newVariables = quotient.getVariables().getVariables();
+    assertThat(newVariables).hasSize(3);
+    assertThat(newVariables).containsAll(variablesFactor1.getVariables());
+    
+    double[] newValues = quotient.getValues();
+    double[] factor1Values = factor1.getValues();
+    double[] factor2Values = factor2.getValues();
+    
+    assertThat(newValues[0]).isEqualTo(factor1Values[0] / factor2Values[0]); // a = 0, b = 0, c = 0
+    assertThat(newValues[1]).isEqualTo(factor1Values[1] / factor2Values[1]); // a = 1, b = 0, c = 0
+    assertThat(newValues[2]).isEqualTo(factor1Values[2] / factor2Values[0]); // a = 0, b = 1, c = 0
+    assertThat(newValues[3]).isEqualTo(factor1Values[3] / factor2Values[1]);
+    assertThat(newValues[4]).isEqualTo(factor1Values[4] / factor2Values[0]);
+    assertThat(newValues[5]).isEqualTo(factor1Values[5] / factor2Values[1]);
+    assertThat(newValues[6]).isEqualTo(factor1Values[6] / factor2Values[2]);
+    assertThat(newValues[7]).isEqualTo(factor1Values[7] / factor2Values[3]);
+    assertThat(newValues[8]).isEqualTo(factor1Values[8] / factor2Values[2]);
+    assertThat(newValues[9]).isEqualTo(factor1Values[9] / factor2Values[3]);
+    assertThat(newValues[10]).isEqualTo(factor1Values[10] / factor2Values[2]);
+    assertThat(newValues[11]).isEqualTo(factor1Values[11] / factor2Values[3]);
+    assertThat(newValues[12]).isEqualTo(factor1Values[12] / factor2Values[4]);
+    assertThat(newValues[13]).isEqualTo(factor1Values[13] / factor2Values[5]);
+    assertThat(newValues[14]).isEqualTo(factor1Values[14] / factor2Values[4]);
+    assertThat(newValues[15]).isEqualTo(factor1Values[15] / factor2Values[5]);
+    assertThat(newValues[16]).isEqualTo(factor1Values[16] / factor2Values[4]);
+    assertThat(newValues[17]).isEqualTo(factor1Values[17] / factor2Values[5]);
+  }
+  
+  @Test
+  public void testFactorDivisionMismatchingScopes() {
+    Scope variablesFactor1 = newVariables(new DiscreteVariable("A", 2), new DiscreteVariable("B", 3));
+    TableBasedDiscreteFactor factor1 = new TableBasedDiscreteFactor(variablesFactor1, 
+        new double[] {
+          1, 2, // B == 0
+          3, 4, // B == 1
+          5, 6 // B == 2
+       });
+    
+    Scope variablesFactor2 = newVariables(new DiscreteVariable("C", 3));
+    TableBasedDiscreteFactor factor2 = new TableBasedDiscreteFactor(variablesFactor2, 
+        new double[] {
+          1, 2, 3
+        });
+    
+    try {
+      factor1.division(factor2);
+      fail("expected exception");
+    } catch (FactorOperationException e) {
+      // happy path
+    }
+  }
+  
+  @Test
+  public void testFactorDivisionDivideZeroByZero() {
+    Scope variablesFactor1 = newVariables(new DiscreteVariable("A", 2), new DiscreteVariable("B", 3));
+    TableBasedDiscreteFactor factor1 = new TableBasedDiscreteFactor(variablesFactor1, 
+        new double[] {
+          0, 0, // B == 0
+          0, 4, // B == 1
+          0, 6 // B == 2
+       });
+    
+    Scope variablesFactor2 = newVariables(new DiscreteVariable("B", 3));
+    TableBasedDiscreteFactor factor2 = new TableBasedDiscreteFactor(variablesFactor2, 
+        new double[] {
+          0, 2, 3
+        });
+    
+    TableBasedDiscreteFactor quotient = factor1.division(factor2);
+    Collection<DiscreteVariable> newVariables = quotient.getVariables().getVariables();
+    assertThat(newVariables).hasSize(2);
+    assertThat(newVariables).containsAll(variablesFactor1.getVariables());
+    
+    double[] newValues = quotient.getValues();
+    double[] factor1Values = factor1.getValues();
+    double[] factor2Values = factor2.getValues();
+    
+    assertThat(newValues[0]).isEqualTo(0);                                    // a = 0, b = 0
+    assertThat(newValues[1]).isEqualTo(0);                                    // a = 1, b = 0
+    assertThat(newValues[2]).isEqualTo(factor1Values[2] / factor2Values[1]);  // a = 0, b = 1
+    assertThat(newValues[3]).isEqualTo(factor1Values[3] / factor2Values[1]);
+    assertThat(newValues[4]).isEqualTo(factor1Values[4] / factor2Values[2]);
+    assertThat(newValues[5]).isEqualTo(factor1Values[5] / factor2Values[2]);
+  }
+  
+  @Test
+  public void testFactorDivisionDivideNonZeroByZero() {
+    Scope variablesFactor1 = newVariables(new DiscreteVariable("A", 2), new DiscreteVariable("B", 3));
+    TableBasedDiscreteFactor factor1 = new TableBasedDiscreteFactor(variablesFactor1, 
+        new double[] {
+          1, 2, // B == 0
+          3, 4, // B == 1
+          5, 6 // B == 2
+       });
+    
+    Scope variablesFactor2 = newVariables(new DiscreteVariable("B", 3));
+    TableBasedDiscreteFactor factor2 = new TableBasedDiscreteFactor(variablesFactor2, 
+        new double[] {
+          0, 2, 3
+        });
+    
+    try {
+      factor1.division(factor2);
+      fail("expected exception");
+    } catch (FactorOperationException e) {
+      // happy path
+    }
   }
   
   protected Scope newVariables(DiscreteVariable... variables) {
