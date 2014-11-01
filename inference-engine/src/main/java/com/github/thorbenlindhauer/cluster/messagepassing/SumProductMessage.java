@@ -3,6 +3,8 @@ package com.github.thorbenlindhauer.cluster.messagepassing;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.github.thorbenlindhauer.cluster.Cluster;
+import com.github.thorbenlindhauer.cluster.Edge;
 import com.github.thorbenlindhauer.exception.ModelStructureException;
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
 
@@ -11,55 +13,64 @@ import com.github.thorbenlindhauer.factor.DiscreteFactor;
  * 
  * @author Thorben
  */
-public class SumProductMessage extends AbstractMessage<SumProductCluster, SumProductMessage, SumProductEdge> {
+public class SumProductMessage implements Message {
 
-  protected SumProductCluster sourceCluster;
+  protected Cluster sourceCluster;
   protected DiscreteFactor potential;
   
-  public SumProductMessage(SumProductCluster cluster, SumProductEdge edge) {
-    super(edge);
+  protected Edge edge;
+  
+  public SumProductMessage(Cluster cluster, Edge edge) {
+    this.edge = edge;
     if (!edge.connects(cluster)) {
       throw new ModelStructureException("Invalid message: Cluster " + cluster + " is not involved in edge " + edge);
     }
     
     this.sourceCluster = cluster;
-    this.edge = edge;
   }
   
-  public void update() {
-    Set<SumProductMessage> inMessages = new HashSet<SumProductMessage>();
-    Set<SumProductEdge> inEdges = sourceCluster.getOtherEdges(edge);
+  @Override
+  public void update(MessagePassingContext messagePassingContext) {
+    Set<Message> inMessages = new HashSet<Message>();
+    Set<Edge> inEdges = sourceCluster.getOtherEdges(edge);
     
-    for (SumProductEdge inEdge : inEdges) {
-      inMessages.add(inEdge.getMessageFrom(inEdge.getConnectedCluster(sourceCluster)));
+    for (Edge inEdge : inEdges) {
+      inMessages.add(messagePassingContext.getMessage(inEdge, inEdge.getTarget(sourceCluster)));
     }
     
-    potential = sourceCluster.getJointFactor();
+    potential = messagePassingContext.getJointDistribution(sourceCluster);
     
     // ignore null potentials
-    for (SumProductMessage inMessage : inMessages) {
+    for (Message inMessage : inMessages) {
       if (potential == null) {
-        potential = inMessage.potential;
-      } else if (inMessage.potential != null) {
-        potential = potential.product(inMessage.potential);
+        potential = inMessage.getPotential();
+      } else if (inMessage.getPotential() != null) {
+        potential = potential.product(inMessage.getPotential());
       }
     }
     
     if (potential != null) {
       potential = potential.marginal(edge.getScope());
     }
-    
   }
   
+  @Override
   public DiscreteFactor getPotential() {
     return potential;
   }
   
-  public SumProductCluster getTargetCluster() {
-    return edge.getConnectedCluster(sourceCluster);
+  @Override
+  public Cluster getTargetCluster() {
+    return edge.getTarget(sourceCluster);
   }
   
-  public SumProductCluster getSourceCluster() {
+  @Override
+  public Cluster getSourceCluster() {
     return sourceCluster;
+  }
+
+  @Override
+  public Edge getEdge() {
+    return edge;
   }
 }

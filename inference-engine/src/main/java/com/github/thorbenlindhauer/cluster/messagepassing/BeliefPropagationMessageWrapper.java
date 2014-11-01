@@ -1,39 +1,47 @@
 package com.github.thorbenlindhauer.cluster.messagepassing;
 
+import com.github.thorbenlindhauer.cluster.Cluster;
+import com.github.thorbenlindhauer.cluster.Edge;
+import com.github.thorbenlindhauer.factor.DiscreteFactor;
+
 
 /**
  * A view on {@link BeliefPropagationMessage} that provides a target cluster
  * 
  * @author Thorben
  */
-public class BeliefPropagationMessageWrapper extends AbstractMessage<BeliefPropagationCluster, BeliefPropagationMessageWrapper, BeliefPropagationEdge> {
+public class BeliefPropagationMessageWrapper implements Message {
 
   protected BeliefPropagationMessage message;
-  protected BeliefPropagationCluster targetCluster;
+  protected Cluster targetCluster;
   
-  public BeliefPropagationMessageWrapper(BeliefPropagationMessage message, BeliefPropagationCluster targetCluster) {
-    super(null);
+  public BeliefPropagationMessageWrapper(BeliefPropagationMessage message, Cluster targetCluster) {
     this.message = message;
     this.targetCluster = targetCluster;
   }
   
   @Override
-  public void update() {
-    message.update(getSourceCluster(), getTargetCluster());
-  }
-
-  @Override
-  public BeliefPropagationEdge getEdge() {
+  public Edge getEdge() {
     return message.getEdge();
   }
 
   @Override
-  public BeliefPropagationCluster getTargetCluster() {
+  public Cluster getTargetCluster() {
     return targetCluster;
   }
 
   @Override
-  public BeliefPropagationCluster getSourceCluster() {
-    return getEdge().getConnectedCluster(targetCluster);
+  public Cluster getSourceCluster() {
+    return getEdge().getTarget(targetCluster);
+  }
+
+  @Override
+  public void update(MessagePassingContext messagePassingContext) {
+    message.update(messagePassingContext, getSourceCluster(), targetCluster);
+  }
+
+  @Override
+  public DiscreteFactor getPotential() {
+    return message.getPotential();
   }
 }

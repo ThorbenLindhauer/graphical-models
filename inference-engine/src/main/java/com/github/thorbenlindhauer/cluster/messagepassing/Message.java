@@ -1,14 +1,20 @@
 package com.github.thorbenlindhauer.cluster.messagepassing;
 
+import com.github.thorbenlindhauer.cluster.Cluster;
+import com.github.thorbenlindhauer.cluster.Edge;
+import com.github.thorbenlindhauer.factor.DiscreteFactor;
 
-public interface Message<R extends MessagePassingCluster<R, S, T>, 
-S extends Message<R, S, T>, T extends MessagePassingEdge<R, S, T>> {
 
-  void update();
+public interface Message {
+
+  void update(MessagePassingContext messagePassingContext);
   
-  T getEdge();
+  DiscreteFactor getPotential();
   
-  R getTargetCluster();
+  Edge getEdge();
   
-  R getSourceCluster();
+  Cluster getTargetCluster();
+  
+  Cluster getSourceCluster();
+  
 }

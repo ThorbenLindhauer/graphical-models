@@ -1,23 +1,28 @@
-package com.github.thorbenlindhauer.cluster.messagepassing;
+package com.github.thorbenlindhauer.cluster;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.github.thorbenlindhauer.exception.ModelStructureException;
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
-import com.github.thorbenlindhauer.factor.FactorUtil;
 import com.github.thorbenlindhauer.factor.TableBasedDiscreteFactor;
 import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.Scope;
 
-public class BeliefPropagationCluster extends AbstractCluster<BeliefPropagationCluster, BeliefPropagationMessageWrapper, BeliefPropagationEdge> {
-
-  // TODO: since the factors are not required for the algorithm, this member may be removed to save memory
+public class Cluster {
+  
+  protected Scope scope;
+  protected Set<Edge> edges;
   protected Set<DiscreteFactor> factors;
   
-  public BeliefPropagationCluster(Scope scope, Set<DiscreteFactor> factors) {
-    super(scope);
+  protected Cluster() {
+    this.edges = new HashSet<Edge>();
+  }
+
+  public Cluster(Scope scope, Set<DiscreteFactor> factors) {
+    this();
     
     // initialize scope from factors
     if (scope == null) {
@@ -33,9 +38,10 @@ public class BeliefPropagationCluster extends AbstractCluster<BeliefPropagationC
     this.factors = factors;
   }
   
-  public BeliefPropagationCluster(Scope scope) {
-    super(scope);
+  public Cluster(Scope scope) {
+    this();
     
+    this.scope = scope;
     double[] values = new double[scope.getNumDistinctValues()];
     Arrays.fill(values, 1);
     DiscreteFactor constantFactor = new TableBasedDiscreteFactor(scope, values);
@@ -43,27 +49,39 @@ public class BeliefPropagationCluster extends AbstractCluster<BeliefPropagationC
     factors.add(constantFactor);
   }
   
-  public BeliefPropagationCluster(Set<DiscreteFactor> factors) {
+  public Cluster(Set<DiscreteFactor> factors) {
     this(null, factors);
   }
 
-  @Override
-  protected void ensurePotentialInitialized() {
-    if (potential == null) {
-      potential = FactorUtil.jointDistribution(factors);
-    }
-  }
   
-  public void updatePotential(DiscreteFactor multiplier) {
-    ensurePotentialInitialized();
+  public Set<Edge> getOtherEdges(Edge outEdge) {
+    // TODO: cache this?
+    Set<Edge> inEdges = new HashSet<Edge>(edges);
+    boolean contained = inEdges.remove(outEdge);
     
-    potential = potential.product(multiplier);
+    if (!contained) {
+      throw new ModelStructureException("Out edge " + outEdge + " is not connected to this cluster");
+    }
+    
+    return inEdges;
   }
   
-  public BeliefPropagationEdge connectTo(BeliefPropagationCluster other) {
-    BeliefPropagationEdge newEdge = new BeliefPropagationEdge(this, other);
+  public Edge connectTo(Cluster other) {
+    Edge newEdge = new Edge(this, other);
     this.edges.add(newEdge);
     other.edges.add(newEdge);
     return newEdge;
+  }
+  
+  public Scope getScope() {
+    return scope;
+  }
+  
+  public Set<Edge> getEdges() {
+    return edges;
+  }
+  
+  public Set<DiscreteFactor> getFactors() {
+    return factors;
   }
 }

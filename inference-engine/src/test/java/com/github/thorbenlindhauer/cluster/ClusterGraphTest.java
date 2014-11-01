@@ -10,9 +10,6 @@ import org.assertj.core.util.Sets;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.github.thorbenlindhauer.cluster.messagepassing.SumProductCluster;
-import com.github.thorbenlindhauer.cluster.messagepassing.SumProductClusterGraph;
-import com.github.thorbenlindhauer.cluster.messagepassing.SumProductEdge;
 import com.github.thorbenlindhauer.exception.ModelStructureException;
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.factor.TableBasedDiscreteFactor;
@@ -41,10 +38,10 @@ public class ClusterGraphTest {
   
   @Test
   public void testClusterCreation() {
-    SumProductCluster cluster1 = new SumProductCluster(Sets.newLinkedHashSet(factor1));
-    SumProductCluster cluster2 = new SumProductCluster(Sets.newLinkedHashSet(factor2));
-    SumProductCluster cluster3 = new SumProductCluster(Sets.newLinkedHashSet(factor3));
-    SumProductCluster cluster4 = new SumProductCluster(Sets.newLinkedHashSet(factor1, factor2));
+    Cluster cluster1 = new Cluster(Sets.newLinkedHashSet(factor1));
+    Cluster cluster2 = new Cluster(Sets.newLinkedHashSet(factor2));
+    Cluster cluster3 = new Cluster(Sets.newLinkedHashSet(factor3));
+    Cluster cluster4 = new Cluster(Sets.newLinkedHashSet(factor1, factor2));
     
     assertThat(cluster1.getScope().getVariableIds()).containsExactly("A");
     assertThat(cluster2.getScope().getVariableIds()).containsExactly("B");
@@ -54,16 +51,16 @@ public class ClusterGraphTest {
   
   @Test
   public void testEdgeCreation() {
-    SumProductCluster cluster1 = new SumProductCluster(Sets.newLinkedHashSet(factor1));
-    SumProductCluster cluster2 = new SumProductCluster(Sets.newLinkedHashSet(factor2));
-    SumProductCluster cluster3 = new SumProductCluster(Sets.newLinkedHashSet(factor3));
+    Cluster cluster1 = new Cluster(Sets.newLinkedHashSet(factor1));
+    Cluster cluster2 = new Cluster(Sets.newLinkedHashSet(factor2));
+    Cluster cluster3 = new Cluster(Sets.newLinkedHashSet(factor3));
     
-    SumProductEdge edge = cluster1.connectTo(cluster2);
-    assertThat(edge.getConnectedCluster(cluster1)).isEqualTo(cluster2);
-    assertThat(edge.getConnectedCluster(cluster2)).isEqualTo(cluster1);
+    Edge edge = cluster1.connectTo(cluster2);
+    assertThat(edge.getTarget(cluster1)).isEqualTo(cluster2);
+    assertThat(edge.getTarget(cluster2)).isEqualTo(cluster1);
     
     try {
-      edge.getConnectedCluster(cluster3);
+      edge.getTarget(cluster3);
       fail("exception expected");
     } catch (ModelStructureException e) {
       // expected
@@ -72,25 +69,25 @@ public class ClusterGraphTest {
     assertThat(edge.getScope().getVariableIds()).isEmpty();
     
     edge = cluster1.connectTo(cluster3);
-    assertThat(edge.getConnectedCluster(cluster1)).isEqualTo(cluster3);
-    assertThat(edge.getConnectedCluster(cluster3)).isEqualTo(cluster1);
+    assertThat(edge.getTarget(cluster1)).isEqualTo(cluster3);
+    assertThat(edge.getTarget(cluster3)).isEqualTo(cluster1);
     
     assertThat(edge.getScope().getVariableIds()).containsExactly("A");
   }
   
   @Test
   public void testEdgeCreationInClusterGraph() {
-    SumProductCluster cluster1 = new SumProductCluster(Sets.newLinkedHashSet(factor1));
-    SumProductCluster cluster2 = new SumProductCluster(Sets.newLinkedHashSet(factor2));
+    Cluster cluster1 = new Cluster(Sets.newLinkedHashSet(factor1));
+    Cluster cluster2 = new Cluster(Sets.newLinkedHashSet(factor2));
     
-    SumProductClusterGraph graph = new SumProductClusterGraph(Sets.newLinkedHashSet(cluster1, cluster2));
+    ClusterGraph graph = new ClusterGraph(Sets.newLinkedHashSet(cluster1, cluster2));
     
-    SumProductEdge edge = graph.connect(cluster1, cluster2);
-    assertThat(edge.getConnectedCluster(cluster1)).isEqualTo(cluster2);
-    assertThat(edge.getConnectedCluster(cluster2)).isEqualTo(cluster1);
+    Edge edge = graph.connect(cluster1, cluster2);
+    assertThat(edge.getTarget(cluster1)).isEqualTo(cluster2);
+    assertThat(edge.getTarget(cluster2)).isEqualTo(cluster1);
     assertThat(graph.getEdges()).contains(edge);
     
-    SumProductCluster cluster3 = new SumProductCluster(Sets.newLinkedHashSet(factor3));
+    Cluster cluster3 = new Cluster(Sets.newLinkedHashSet(factor3));
     try {
       graph.connect(cluster1, cluster3);
       fail("expected exception as cluster3 is not part of the graph");

@@ -4,25 +4,28 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.github.thorbenlindhauer.cluster.Cluster;
+import com.github.thorbenlindhauer.cluster.ClusterGraph;
+import com.github.thorbenlindhauer.cluster.Edge;
 import com.github.thorbenlindhauer.cluster.messagepassing.Message;
-import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingCluster;
-import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingClusterGraph;
-import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingEdge;
+import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingContext;
+import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingContextFactory;
 import com.github.thorbenlindhauer.exception.ModelStructureException;
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.variable.Scope;
 
 //TODO: think about interface "IncrementalInferencer" that allows to submit observations incrementally
-public class CliqueTreeInferencer<R extends MessagePassingCluster<R, S, T>, 
-S extends Message<R, S, T>, T extends MessagePassingEdge<R, S, T>> implements ExactInferencer {
+public class CliqueTreeInferencer implements ExactInferencer {
   
-  protected MessagePassingClusterGraph<R, S, T> clusterGraph;
-  protected R rootCluster;
+  protected ClusterGraph clusterGraph;
+  protected Cluster rootCluster;
   protected boolean messagesPropagated = false;
+  protected MessagePassingContext messagePassingContext;
   
-  public CliqueTreeInferencer(MessagePassingClusterGraph<R, S, T> clusterGraph, R rootCluster) {
+  public CliqueTreeInferencer(ClusterGraph clusterGraph, Cluster rootCluster, MessagePassingContextFactory messageContextFactory) {
     this.clusterGraph = clusterGraph;
     this.rootCluster = rootCluster;
+    this.messagePassingContext = messageContextFactory.newMessagePassingContext(clusterGraph);
   }
 
   public double jointProbability(Scope projection, int[] variableAssignment) {
@@ -45,9 +48,9 @@ S extends Message<R, S, T>, T extends MessagePassingEdge<R, S, T>> implements Ex
   protected DiscreteFactor getClusterFactorContainingScope(Scope scope) {
     ensureMessagesPropagated();
     
-    for (R cluster : clusterGraph.getClusters()) {
+    for (Cluster cluster : clusterGraph.getClusters()) {
       if (cluster.getScope().contains(scope)) {
-        return cluster.getPotential().marginal(scope);
+        return messagePassingContext.getClusterPotential(cluster).marginal(scope);
       }
     }
     
@@ -63,21 +66,21 @@ S extends Message<R, S, T>, T extends MessagePassingEdge<R, S, T>> implements Ex
   
   protected void propagateMessages() {
     // forward pass (beginning at leaves)
-    Set<S> initialForwardMessages = new HashSet<S>();
-    for (R cluster : clusterGraph.getClusters()) {
+    Set<Message> initialForwardMessages = new HashSet<Message>();
+    for (Cluster cluster : clusterGraph.getClusters()) {
       // determine the initial messages
       if (cluster != rootCluster && cluster.getEdges().size() == 1) {
-        T outEdge = cluster.getEdges().iterator().next();
-        initialForwardMessages.add(outEdge.getMessageFrom(cluster));
+        Edge outEdge = cluster.getEdges().iterator().next();
+        initialForwardMessages.add(messagePassingContext.getMessage(outEdge, cluster));
       }
     }
     
     executeMessagePass(initialForwardMessages);
     
     // backward pass (beginning at root)
-    Set<S> initialBackwardMessages = new HashSet<S>();
-    for (T rootOutEdge : rootCluster.getEdges()) {
-      initialBackwardMessages.add(rootOutEdge.getMessageFrom(rootCluster));
+    Set<Message> initialBackwardMessages = new HashSet<Message>();
+    for (Edge rootOutEdge : rootCluster.getEdges()) {
+      initialBackwardMessages.add(messagePassingContext.getMessage(rootOutEdge, rootCluster));
     }
     
     executeMessagePass(initialBackwardMessages);
@@ -85,28 +88,28 @@ S extends Message<R, S, T>, T extends MessagePassingEdge<R, S, T>> implements Ex
     messagesPropagated = true;
   }
   
-  protected void executeMessagePass(Set<S> initialMessages) {
-    Set<T> processedEdges = new HashSet<T>();
-    Set<S> currentMessages = initialMessages;
+  protected void executeMessagePass(Set<Message> initialMessages) {
+    Set<Edge> processedEdges = new HashSet<Edge>();
+    Set<Message> currentMessages = initialMessages;
     
     while (!currentMessages.isEmpty()) {
-      Iterator<S> it = currentMessages.iterator();
-      S currentMessage = it.next();
+      Iterator<Message> it = currentMessages.iterator();
+      Message currentMessage = it.next();
       it.remove();
       
-      currentMessage.update();
+      currentMessage.update(messagePassingContext);
       processedEdges.add(currentMessage.getEdge());
       
-      R targetCluster = currentMessage.getTargetCluster();
+      Cluster targetCluster = currentMessage.getTargetCluster();
       if (targetCluster != rootCluster) {
-        Set<T> targetOutEdges = targetCluster.getOtherEdges(currentMessage.getEdge());
+        Set<Edge> targetOutEdges = targetCluster.getOtherEdges(currentMessage.getEdge());
         
-        for (T targetOutEdge : targetOutEdges) {
+        for (Edge targetOutEdge : targetOutEdges) {
           // only add the message for the out edge, if it has not yet been computed and it can be computed right away
           // (ie. has no more pending in messages)
           if (!processedEdges.contains(targetOutEdge) && 
               processedEdges.containsAll(targetCluster.getOtherEdges(targetOutEdge))) {
-            currentMessages.add(targetOutEdge.getMessageFrom(targetCluster));
+            currentMessages.add(messagePassingContext.getMessage(targetOutEdge, targetCluster));
           }
         }
       }
