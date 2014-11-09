@@ -42,4 +42,15 @@ public class Edge {
   public boolean connects(Cluster cluster) {
     return cluster1 == cluster || cluster2 == cluster;
   }
+  
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    
+    sb.append(cluster1.toString());
+    sb.append(" => ");
+    sb.append(cluster2.toString());
+    
+    return sb.toString();
+  }
 }

@@ -84,4 +84,13 @@ public class Cluster {
   public Set<DiscreteFactor> getFactors() {
     return factors;
   }
+  
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Cluster[Scope = ");
+    sb.append(scope.toString());
+    sb.append("]");
+    return sb.toString();
+  }
 }
