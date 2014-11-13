@@ -1,12 +1,15 @@
 package com.github.thorbenlindhauer.graph.operation;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import com.github.thorbenlindhauer.cluster.Cluster;
 import com.github.thorbenlindhauer.cluster.ClusterGraph;
+import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.factorgraph.FactorGraph;
+import com.github.thorbenlindhauer.graph.export.ClusterGraphDotExporter;
 import com.github.thorbenlindhauer.inference.variableelimination.MinFillEliminationStrategy;
 import com.github.thorbenlindhauer.inference.variableelimination.VariableEliminationStrategy;
 import com.github.thorbenlindhauer.network.GraphicalModel;
@@ -37,6 +40,9 @@ public class ClusterGraphGenerator {
     Set<Cluster> clusters = getMaximumCliqueAnalyzer().execute(inducedGraph);
     
     ClusterGraph clusterGraph = getMaximumSpanningTreeAnalyzer().execute(clusters);
+    
+    ClusterGraphDotExporter exporter = new ClusterGraphDotExporter("clustergraph.dot");
+    exporter.writeToFile(clusterGraph);
     
     return clusterGraph;
   }

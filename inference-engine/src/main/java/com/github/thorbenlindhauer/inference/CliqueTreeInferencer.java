@@ -75,7 +75,7 @@ public class CliqueTreeInferencer implements ExactInferencer {
       }
     }
     
-    executeMessagePass(initialForwardMessages);
+    executeMessagePass(initialForwardMessages, true);
     
     // backward pass (beginning at root)
     Set<Message> initialBackwardMessages = new HashSet<Message>();
@@ -83,12 +83,12 @@ public class CliqueTreeInferencer implements ExactInferencer {
       initialBackwardMessages.add(messagePassingContext.getMessage(rootOutEdge, rootCluster));
     }
     
-    executeMessagePass(initialBackwardMessages);
+    executeMessagePass(initialBackwardMessages, false);
     
     messagesPropagated = true;
   }
   
-  protected void executeMessagePass(Set<Message> initialMessages) {
+  protected void executeMessagePass(Set<Message> initialMessages, boolean isForwardPass) {
     Set<Edge> processedEdges = new HashSet<Edge>();
     Set<Message> currentMessages = initialMessages;
     
@@ -105,10 +105,11 @@ public class CliqueTreeInferencer implements ExactInferencer {
         Set<Edge> targetOutEdges = targetCluster.getOtherEdges(currentMessage.getEdge());
         
         for (Edge targetOutEdge : targetOutEdges) {
-          // only add the message for the out edge, if it has not yet been computed and it can be computed right away
-          // (ie. has no more pending in messages)
+          // only add the message for the out edge, if it has not yet been computed yet in this message pass
+          // if this is a forward pass (i.e. the first pass), we additionally need to check
+          // whether the incoming messages are already all available (ie. the candidate out message has no more pending in messages)
           if (!processedEdges.contains(targetOutEdge) && 
-              processedEdges.containsAll(targetCluster.getOtherEdges(targetOutEdge))) {
+              (!isForwardPass || processedEdges.containsAll(targetCluster.getOtherEdges(targetOutEdge)))) {
             currentMessages.add(messagePassingContext.getMessage(targetOutEdge, targetCluster));
           }
         }
