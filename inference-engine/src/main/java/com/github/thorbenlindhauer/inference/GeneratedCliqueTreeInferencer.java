@@ -1,7 +1,7 @@
 package com.github.thorbenlindhauer.inference;
 
+import com.github.thorbenlindhauer.cluster.generation.CliqueTreeGenerator;
 import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingContextFactory;
-import com.github.thorbenlindhauer.graph.operation.ClusterGraphGenerator;
 import com.github.thorbenlindhauer.network.GraphicalModel;
 
 /**
@@ -11,7 +11,7 @@ import com.github.thorbenlindhauer.network.GraphicalModel;
  */
 public class GeneratedCliqueTreeInferencer extends CliqueTreeInferencer {
   
-  public GeneratedCliqueTreeInferencer(GraphicalModel graphicalModel, ClusterGraphGenerator clusterGraphGenerator, MessagePassingContextFactory messageContextFactory) {
+  public GeneratedCliqueTreeInferencer(GraphicalModel graphicalModel, CliqueTreeGenerator clusterGraphGenerator, MessagePassingContextFactory messageContextFactory) {
     super(clusterGraphGenerator.generateClusterGraph(graphicalModel), null, messageContextFactory);
     
     // choose random root cluster

@@ -1,34 +1,42 @@
-package com.github.thorbenlindhauer.graph.operation;
+package com.github.thorbenlindhauer.cluster.generation;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import com.github.thorbenlindhauer.Listener;
 import com.github.thorbenlindhauer.cluster.Cluster;
 import com.github.thorbenlindhauer.cluster.ClusterGraph;
-import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.factorgraph.FactorGraph;
-import com.github.thorbenlindhauer.graph.export.ClusterGraphDotExporter;
+import com.github.thorbenlindhauer.graph.operation.MaximumCardinalityCliqueOperation;
+import com.github.thorbenlindhauer.graph.operation.MaximumSpanningClusterGraphOperation;
+import com.github.thorbenlindhauer.graph.operation.Triangulator;
 import com.github.thorbenlindhauer.inference.variableelimination.MinFillEliminationStrategy;
 import com.github.thorbenlindhauer.inference.variableelimination.VariableEliminationStrategy;
 import com.github.thorbenlindhauer.network.GraphicalModel;
 
 /**
- * Generates a cluster graph from a graphical model by the following strategy:
+ * Generates a clique tree from a graphical model by the following strategy:
  * 
  * <ul>
  *   <li>determine a variable elimination order</li>
  *   <li>moralize graphical model</li>
  *   <li>determine induced (and triangulated) graph based on that order</li>
- *   <li>find maximum clique by maximum cardinality search</li>
+ *   <li>find maximum cliques by maximum cardinality search</li>
  *   <li>determine edges by maximum spanning tree over the clusters and their sepsets</li>
  * </ul>
  * 
  * @author Thorben
  */
-public class ClusterGraphGenerator {
-
+public class CliqueTreeGenerator {
+  
+  public static final String CLUSTER_GRAPH_CREATED_EVENT = "cluster-graph-created";
+  
+  protected Map<String, List<Listener<?>>> listeners = new HashMap<String, List<Listener<?>>>();
+  
   public ClusterGraph generateClusterGraph(GraphicalModel graphicalModel) {
     List<String> eliminationOrder = getEliminationStrategy().getEliminationOrder(graphicalModel, 
         Arrays.asList(graphicalModel.getScope().getVariableIds()));
@@ -41,8 +49,7 @@ public class ClusterGraphGenerator {
     
     ClusterGraph clusterGraph = getMaximumSpanningTreeAnalyzer().execute(clusters);
     
-    ClusterGraphDotExporter exporter = new ClusterGraphDotExporter("clustergraph.dot");
-    exporter.writeToFile(clusterGraph);
+    dispatchEvent(CLUSTER_GRAPH_CREATED_EVENT, clusterGraph);
     
     return clusterGraph;
   }
@@ -63,5 +70,22 @@ public class ClusterGraphGenerator {
     return new MaximumSpanningClusterGraphOperation();
   }
   
+  public void registerListener(String event, Listener<?> listener) {
+    List<Listener<?>> listenersForEvent = listeners.get(event);
+    if (listenersForEvent == null) {
+      listenersForEvent = new ArrayList<Listener<?>>();
+      listeners.put(event, listenersForEvent);
+    }
+    listenersForEvent.add(listener);
+  }
   
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  protected void dispatchEvent(String event, Object value) {
+    List<Listener<?>> listenersForEvent = listeners.get(event);
+    if (listenersForEvent != null) {
+      for (Listener listener : listenersForEvent) {
+        listener.notify(event, value);
+      }
+    }
+  }
 }

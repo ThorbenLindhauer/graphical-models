@@ -105,8 +105,8 @@ public class CliqueTreeInferencer implements ExactInferencer {
         Set<Edge> targetOutEdges = targetCluster.getOtherEdges(currentMessage.getEdge());
         
         for (Edge targetOutEdge : targetOutEdges) {
-          // only add the message for the out edge, if it has not yet been computed yet in this message pass
-          // if this is a forward pass (i.e. the first pass), we additionally need to check
+          // Only add the message for the out edge, if it has not yet been computed in this message pass.
+          // If this is a forward pass (i.e. the first pass), we additionally need to check
           // whether the incoming messages are already all available (ie. the candidate out message has no more pending in messages)
           if (!processedEdges.contains(targetOutEdge) && 
               (!isForwardPass || processedEdges.containsAll(targetCluster.getOtherEdges(targetOutEdge)))) {
