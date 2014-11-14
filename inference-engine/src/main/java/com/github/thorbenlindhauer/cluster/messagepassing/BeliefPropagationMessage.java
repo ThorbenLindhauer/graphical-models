@@ -20,9 +20,14 @@ public class BeliefPropagationMessage {
     if (potential != null) {
       targetUpdate = newPotential.division(potential);
     }
+
+    DiscreteFactor newTargetPotential = targetUpdate;
     
     DiscreteFactor targetPotential = messagePassingContext.getClusterPotential(targetCluster);
-    DiscreteFactor newTargetPotential = targetPotential.product(targetUpdate);
+    if (targetPotential != null) {
+      newTargetPotential = newTargetPotential.product(targetPotential);
+    }
+    
     messagePassingContext.updateClusterPotential(targetCluster, newTargetPotential);
     
     potential = newPotential;
