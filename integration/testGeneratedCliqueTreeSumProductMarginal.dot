@@ -1,0 +1,16 @@
+graph {254567325 [label="[Lateatwork, lateathome, shopping]" ];
+1346370750 [label="[weather, slow, day, salary]" ];
+418006811 [label="[Lateatwork, vehicle, weather]" ];
+1855474291 [label="[Lateatwork, weather, slow]" ];
+746719862 [label="[weather, country]" ];
+226287566 [label="[lateathome, missingmatch]" ];
+1021463140 [label="[Lateatwork, beginning, vehicle]" ];
+725606451 [label="[Lateatwork, yelling, slow]" ];
+418006811 -- 1021463140;
+418006811 -- 746719862;
+254567325 -- 226287566;
+254567325 -- 418006811;
+418006811 -- 1855474291;
+1855474291 -- 725606451;
+1346370750 -- 1855474291;
+}

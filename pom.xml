@@ -8,6 +8,7 @@
   <modules>
     <module>inference-engine</module>
     <module>import</module>
+    <module>integration</module>
   </modules>
 
   <dependencyManagement>

@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--
+  Bayesian network in XMLBIF v0.3 (BayesNet Interchange Format)
+  Produced by SamIam http://reasoning.cs.ucla.edu/samiam
+  Output created Nov 14, 2014 12:42:49 PM
+-->
+
+<BIF VERSION="0.3">
+<NETWORK>
+  <NAME>bayesiannetwork</NAME>
+
+  <VARIABLE TYPE="nature">
+    <NAME>salary</NAME>
+    <OUTCOME>bad</OUTCOME>
+    <OUTCOME>average</OUTCOME>
+    <OUTCOME>good</OUTCOME>
+    <PROPERTY>position = (329, -164)</PROPERTY>
+  </VARIABLE>
+
+  <VARIABLE TYPE="nature">
+    <NAME>Lateatwork</NAME>
+    <OUTCOME>yes</OUTCOME>
+    <OUTCOME>no</OUTCOME>
+    <PROPERTY>position = (648, -359)</PROPERTY>
+  </VARIABLE>
+
+  <VARIABLE TYPE="nature">
+    <NAME>vehicle</NAME>
+    <OUTCOME>bike</OUTCOME>
+    <OUTCOME>bus</OUTCOME>
+    <OUTCOME>car</OUTCOME>
+    <PROPERTY>position = (584, -230)</PROPERTY>
+  </VARIABLE>
+
+  <VARIABLE TYPE="nature">
+    <NAME>day</NAME>
+    <OUTCOME>monday</OUTCOME>
+    <OUTCOME>midweek</OUTCOME>
+    <OUTCOME>friday</OUTCOME>
+    <PROPERTY>position = (187, -224)</PROPERTY>
+  </VARIABLE>
+
+  <VARIABLE TYPE="nature">
+    <NAME>weather</NAME>
+    <OUTCOME>rainy</OUTCOME>
+    <OUTCOME>cloudy</OUTCOME>
+    <OUTCOME>sunny</OUTCOME>
+    <PROPERTY>position = (506, -138)</PROPERTY>
+  </VARIABLE>
+
+  <VARIABLE TYPE="nature">
+    <NAME>slow</NAME>
+    <OUTCOME>slow</OUTCOME>
+    <OUTCOME>medium</OUTCOME>
+    <OUTCOME>fast</OUTCOME>
+    <PROPERTY>position = (330, -366)</PROPERTY>
+  </VARIABLE>
+
+  <VARIABLE TYPE="nature">
+    <NAME>yelling</NAME>
+    <OUTCOME>yes</OUTCOME>
+    <OUTCOME>no</OUTCOME>
+    <PROPERTY>position = (470, -491)</PROPERTY>
+  </VARIABLE>
+
+  <VARIABLE TYPE="nature">
+    <NAME>missingmatch</NAME>
+    <OUTCOME>yes</OUTCOME>
+    <OUTCOME>no</OUTCOME>
+    <PROPERTY>position = (822, -546)</PROPERTY>
+  </VARIABLE>
+
+  <VARIABLE TYPE="nature">
+    <NAME>shopping</NAME>
+    <OUTCOME>none</OUTCOME>
+    <OUTCOME>little</OUTCOME>
+    <OUTCOME>everything</OUTCOME>
+    <PROPERTY>position = (981, -348)</PROPERTY>
+  </VARIABLE>
+
+  <VARIABLE TYPE="nature">
+    <NAME>country</NAME>
+    <OUTCOME>germany</OUTCOME>
+    <OUTCOME>australia</OUTCOME>
+    <PROPERTY>position = (506, -15)</PROPERTY>
+  </VARIABLE>
+
+  <VARIABLE TYPE="nature">
+    <NAME>lateathome</NAME>
+    <OUTCOME>yes</OUTCOME>
+    <OUTCOME>no</OUTCOME>
+    <PROPERTY>position = (819, -439)</PROPERTY>
+  </VARIABLE>
+
+  <VARIABLE TYPE="nature">
+    <NAME>beginning</NAME>
+    <OUTCOME>nine</OUTCOME>
+    <OUTCOME>ten</OUTCOME>
+    <OUTCOME>eleven</OUTCOME>
+    <PROPERTY>position = (787, -226)</PROPERTY>
+  </VARIABLE>
+
+  <DEFINITION>
+    <FOR>salary</FOR>
+    <TABLE>0.30000000000000004 0.6000000000000001 0.10000000000000002 </TABLE>
+  </DEFINITION>
+
+  <DEFINITION>
+    <FOR>Lateatwork</FOR>
+    <GIVEN>vehicle</GIVEN>
+    <GIVEN>beginning</GIVEN>
+    <TABLE>0.3 0.7 0.2 0.8 0.2 0.8 0.6 0.4 0.6 0.4 0.6 0.4 0.7 0.3 0.5 0.5 0.2 0.8 </TABLE>
+  </DEFINITION>
+
+  <DEFINITION>
+    <FOR>vehicle</FOR>
+    <GIVEN>weather</GIVEN>
+    <TABLE>0.1 0.3 0.6 0.3 0.3 0.4 0.7000000000000001 0.20000000000000004 0.10000000000000002 </TABLE>
+  </DEFINITION>
+
+  <DEFINITION>
+    <FOR>day</FOR>
+    <TABLE>0.2 0.6 0.2 </TABLE>
+  </DEFINITION>
+
+  <DEFINITION>
+    <FOR>weather</FOR>
+    <GIVEN>country</GIVEN>
+    <TABLE>0.3 0.5 0.2 0.2 0.05 0.75 </TABLE>
+  </DEFINITION>
+
+  <DEFINITION>
+    <FOR>slow</FOR>
+    <GIVEN>day</GIVEN>
+    <GIVEN>salary</GIVEN>
+    <GIVEN>weather</GIVEN>
+    <TABLE>0.8 0.15 0.05 0.75 0.2 0.05 0.6 0.3 0.1 0.6 0.3 0.1 0.6 0.25 0.15 0.55 0.3 0.15 0.4 0.3 0.3 0.35 0.35 0.3 0.3 0.5 0.2 0.7 0.25 0.05 0.65 0.3 0.05 0.5 0.4 0.1 0.5 0.3 0.2 0.5 0.25 0.25 0.45 0.3 0.25 0.3 0.3 0.4 0.25 0.35 0.4 0.2 0.5 0.3 0.6 0.25 0.15 0.55 0.3 0.15 0.4 0.4 0.2 0.4 0.4 0.2 0.4 0.35 0.25 0.35 0.4 0.25 0.2 0.4 0.4 0.15 0.45 0.4 0.1 0.6 0.3 </TABLE>
+  </DEFINITION>
+
+  <DEFINITION>
+    <FOR>yelling</FOR>
+    <GIVEN>Lateatwork</GIVEN>
+    <GIVEN>slow</GIVEN>
+    <TABLE>0.9 0.1 0.6 0.4 0.45 0.55 0.7 0.3 0.3 0.7 0.1 0.9 </TABLE>
+  </DEFINITION>
+
+  <DEFINITION>
+    <FOR>missingmatch</FOR>
+    <GIVEN>lateathome</GIVEN>
+    <TABLE>0.8 0.2 0.2 0.8 </TABLE>
+  </DEFINITION>
+
+  <DEFINITION>
+    <FOR>shopping</FOR>
+    <TABLE>0.3 0.5 0.2 </TABLE>
+  </DEFINITION>
+
+  <DEFINITION>
+    <FOR>country</FOR>
+    <TABLE>0.5 0.5 </TABLE>
+  </DEFINITION>
+
+  <DEFINITION>
+    <FOR>lateathome</FOR>
+    <GIVEN>Lateatwork</GIVEN>
+    <GIVEN>shopping</GIVEN>
+    <TABLE>0.5 0.5 0.7 0.3 0.9 0.1 0.05 0.95 0.8 0.2 0.5 0.5 </TABLE>
+  </DEFINITION>
+
+  <DEFINITION>
+    <FOR>beginning</FOR>
+    <TABLE>0.7000000000000001 0.20000000000000004 0.10000000000000002 </TABLE>
+  </DEFINITION>
+
+</NETWORK>
+</BIF>
