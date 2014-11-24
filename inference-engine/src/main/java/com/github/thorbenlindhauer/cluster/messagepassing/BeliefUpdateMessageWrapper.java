@@ -6,16 +6,16 @@ import com.github.thorbenlindhauer.factor.DiscreteFactor;
 
 
 /**
- * A view on {@link BeliefPropagationMessage} that provides a target cluster
+ * A view on {@link BeliefUpdateMessage} that provides a target cluster
  * 
  * @author Thorben
  */
-public class BeliefPropagationMessageWrapper implements Message {
+public class BeliefUpdateMessageWrapper implements Message {
 
-  protected BeliefPropagationMessage message;
+  protected BeliefUpdateMessage message;
   protected Cluster targetCluster;
   
-  public BeliefPropagationMessageWrapper(BeliefPropagationMessage message, Cluster targetCluster) {
+  public BeliefUpdateMessageWrapper(BeliefUpdateMessage message, Cluster targetCluster) {
     this.message = message;
     this.targetCluster = targetCluster;
   }

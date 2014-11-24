@@ -2,10 +2,10 @@ package com.github.thorbenlindhauer.cluster.messagepassing;
 
 import com.github.thorbenlindhauer.cluster.ClusterGraph;
 
-public class BeliefPropagationContextFactory implements MessagePassingContextFactory {
+public class BeliefUpdateContextFactory implements MessagePassingContextFactory {
 
   @Override
   public MessagePassingContext newMessagePassingContext(ClusterGraph clusterGraph) {
-    return new BeliefPropagationContext(clusterGraph);
+    return new BeliefUpdateContext(clusterGraph);
   }
 }

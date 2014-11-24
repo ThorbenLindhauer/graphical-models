@@ -9,20 +9,20 @@ import com.github.thorbenlindhauer.cluster.Edge;
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.factor.FactorUtil;
 
-public class BeliefPropagationContext implements MessagePassingContext {
+public class BeliefUpdateContext implements MessagePassingContext {
 
-  protected Map<Edge, BeliefPropagationMessage> messages;
+  protected Map<Edge, BeliefUpdateMessage> messages;
   protected Map<Cluster, DiscreteFactor> clusterPotentials;
   
-  public BeliefPropagationContext(ClusterGraph clusterGraph) {
+  public BeliefUpdateContext(ClusterGraph clusterGraph) {
     initializeClusterPotentials(clusterGraph);
     initializeMessages(clusterGraph);
   }
   
   protected void initializeMessages(ClusterGraph clusterGraph) {
-    this.messages = new HashMap<Edge, BeliefPropagationMessage>();
+    this.messages = new HashMap<Edge, BeliefUpdateMessage>();
     for (Edge edge : clusterGraph.getEdges()) {
-      BeliefPropagationMessage message = new BeliefPropagationMessage(edge);
+      BeliefUpdateMessage message = new BeliefUpdateMessage(edge);
       messages.put(edge, message);
     }
     
@@ -38,8 +38,8 @@ public class BeliefPropagationContext implements MessagePassingContext {
 
   @Override
   public Message getMessage(Edge edge, Cluster sourceCluster) {
-    BeliefPropagationMessage message = messages.get(edge);
-    BeliefPropagationMessageWrapper wrapper = message.wrapAsDirectedMessage(edge.getTarget(sourceCluster));
+    BeliefUpdateMessage message = messages.get(edge);
+    BeliefUpdateMessageWrapper wrapper = message.wrapAsDirectedMessage(edge.getTarget(sourceCluster));
     
     return wrapper;
   }

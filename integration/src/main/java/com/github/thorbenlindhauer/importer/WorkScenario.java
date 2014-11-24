@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import com.github.thorbenlindhauer.cluster.generation.CliqueTreeGenerator;
 import com.github.thorbenlindhauer.cluster.generation.ClusterGraphExportListener;
-import com.github.thorbenlindhauer.cluster.messagepassing.BeliefPropagationContextFactory;
+import com.github.thorbenlindhauer.cluster.messagepassing.BeliefUpdateContextFactory;
 import com.github.thorbenlindhauer.cluster.messagepassing.SumProductContextFactory;
 import com.github.thorbenlindhauer.importer.xmlbif.XMLBIFImporter;
 import com.github.thorbenlindhauer.inference.ExactInferencer;
@@ -149,7 +149,7 @@ public class WorkScenario {
     cliqueTreeGenerator.registerListener(CliqueTreeGenerator.CLUSTER_GRAPH_CREATED_EVENT, 
         new ClusterGraphExportListener("testGeneratedCliqueTreeBeliefPropagationMarginal.dot"));
     
-    ExactInferencer inferencer = new GeneratedCliqueTreeInferencer(graphicalModel, cliqueTreeGenerator, new BeliefPropagationContextFactory());
+    ExactInferencer inferencer = new GeneratedCliqueTreeInferencer(graphicalModel, cliqueTreeGenerator, new BeliefUpdateContextFactory());
     
     long startTime = System.currentTimeMillis();
     double prob = inferencer.jointProbability(graphicalModel.getScope().subScope("Lateatwork"), new int[] { 0 });

@@ -4,12 +4,12 @@ import com.github.thorbenlindhauer.cluster.Cluster;
 import com.github.thorbenlindhauer.cluster.Edge;
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
 
-public class BeliefPropagationMessage {
+public class BeliefUpdateMessage {
 
   protected DiscreteFactor potential;
   protected Edge edge;
 
-  public BeliefPropagationMessage(Edge edge) {
+  public BeliefUpdateMessage(Edge edge) {
     this.edge = edge;
   }
   
@@ -33,8 +33,8 @@ public class BeliefPropagationMessage {
     potential = newPotential;
   }
 
-  public BeliefPropagationMessageWrapper wrapAsDirectedMessage(Cluster targetCluster) {
-    return new BeliefPropagationMessageWrapper(this, targetCluster);
+  public BeliefUpdateMessageWrapper wrapAsDirectedMessage(Cluster targetCluster) {
+    return new BeliefUpdateMessageWrapper(this, targetCluster);
   }
   
   public Edge getEdge() {
