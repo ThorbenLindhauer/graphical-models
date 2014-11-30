@@ -44,7 +44,8 @@ public class ClusterGraphInferencer implements ExactInferencer {
     this.calibrationContext = calibrationContextFactory.buildCalibrationContext(clusterGraph, messagePassingContext);
 
     this.messagePassingListeners = new ArrayList<MessageListener>();
-    messagePassingListeners.add(messagePassingContext);
+    this.messagePassingListeners.add(messagePassingContext);
+    this.messagePassingListeners.add(calibrationContext);
   }
 
   public double jointProbability(Scope projection, int[] variableAssignment) {

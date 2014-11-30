@@ -15,7 +15,7 @@ package com.github.thorbenlindhauer.inference;
 import com.github.thorbenlindhauer.cluster.messagepassing.BeliefUpdateContextFactory;
 import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingContextFactory;
 import com.github.thorbenlindhauer.inference.loopy.ClusterGraphCalibrationContextFactory;
-import com.github.thorbenlindhauer.inference.loopy.RoundRobinClusterGraphCalibrationContextFactory;
+import com.github.thorbenlindhauer.inference.loopy.RoundRobinCalibrationContext.RoundRobinCalibrationContextFactory;
 
 public class BeliefUpdateLoopyBeliefPropagationInferencerTest extends LoopyBeliefPropagationInferencerTest {
 
@@ -26,7 +26,7 @@ public class BeliefUpdateLoopyBeliefPropagationInferencerTest extends LoopyBelie
 
   @Override
   protected ClusterGraphCalibrationContextFactory getCalibrationContextFactory() {
-    return new RoundRobinClusterGraphCalibrationContextFactory();
+    return new RoundRobinCalibrationContextFactory();
   }
 
 }

@@ -27,16 +27,16 @@ import com.github.thorbenlindhauer.factor.DiscreteFactor;
  * @author Thorben
  *
  */
-public class RoundRobinClusterGraphCalibrationContext implements ClusterGraphCalibrationContext {
+public class RoundRobinCalibrationContext implements ClusterGraphCalibrationContext {
 
-  protected static final double COMPARISON_PRECISION = 10e-10;
+  protected static final double COMPARISON_PRECISION = 10e-3;
 
   protected List<Message> messages;
   protected Iterator<Message> messageIt;
   protected boolean isCurrentRoundCalibrated;
   protected MessagePassingContext messagePassingContext;
 
-  public RoundRobinClusterGraphCalibrationContext(ClusterGraph clusterGraph, MessagePassingContext messagePassingContext) {
+  public RoundRobinCalibrationContext(ClusterGraph clusterGraph, MessagePassingContext messagePassingContext) {
     this.messages = new ArrayList<Message>();
 
     for (Edge edge : clusterGraph.getEdges()) {
@@ -93,5 +93,20 @@ public class RoundRobinClusterGraphCalibrationContext implements ClusterGraphCal
 
     return true;
   }
+
+  @Override
+  public void notify(String eventName, Message object) {
+    // do nothing
+  }
+
+  public static class RoundRobinCalibrationContextFactory implements ClusterGraphCalibrationContextFactory {
+
+    @Override
+    public ClusterGraphCalibrationContext buildCalibrationContext(ClusterGraph clusterGraph, MessagePassingContext messagePassingContext) {
+      return new RoundRobinCalibrationContext(clusterGraph, messagePassingContext);
+    }
+
+  }
+
 
 }

@@ -12,18 +12,31 @@
 */
 package com.github.thorbenlindhauer.inference.loopy;
 
-import com.github.thorbenlindhauer.cluster.ClusterGraph;
-import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingContext;
+import com.github.thorbenlindhauer.cluster.messagepassing.Message;
+import com.github.thorbenlindhauer.cluster.messagepassing.MessageListener;
 
 /**
  * @author Thorben
  *
  */
-public class RoundRobinClusterGraphCalibrationContextFactory implements ClusterGraphCalibrationContextFactory {
+public class MessageLogListener implements MessageListener {
+
+  protected int messageCount;
 
   @Override
-  public ClusterGraphCalibrationContext buildCalibrationContext(ClusterGraph clusterGraph, MessagePassingContext messagePassingContext) {
-    return new RoundRobinClusterGraphCalibrationContext(clusterGraph, messagePassingContext);
+  public void notify(String eventName, Message message) {
+    StringBuilder logBuilder = new StringBuilder();
+
+    logBuilder.append("Message ");
+    logBuilder.append(messageCount++);
+    logBuilder.append(": ");
+    logBuilder.append(message.getSourceCluster());
+    logBuilder.append(" => ");
+    logBuilder.append(message.getTargetCluster());
+
+    System.out.println(logBuilder.toString());
+
   }
+
 
 }

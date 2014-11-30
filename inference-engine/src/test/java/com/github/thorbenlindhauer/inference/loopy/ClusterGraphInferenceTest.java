@@ -32,7 +32,8 @@ import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingContextF
 import com.github.thorbenlindhauer.cluster.messagepassing.SumProductContextFactory;
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.inference.ClusterGraphInferencer;
-import com.github.thorbenlindhauer.inference.ExactInferencer;
+import com.github.thorbenlindhauer.inference.loopy.PrioritizedCalibrationContext.PrioritizedCalibrationContextFactory;
+import com.github.thorbenlindhauer.inference.loopy.RoundRobinCalibrationContext.RoundRobinCalibrationContextFactory;
 import com.github.thorbenlindhauer.network.StandaloneFactorBuilder;
 import com.github.thorbenlindhauer.test.util.TestConstants;
 import com.github.thorbenlindhauer.variable.DiscreteVariable;
@@ -47,12 +48,14 @@ public class ClusterGraphInferenceTest {
   protected ClusterGraph clusterGraph;
   protected DiscreteFactor fullFactor;
 
-  @Parameters(name = "{index}: messagePassingContext: {0}; calibrationContext: {1}")
+  @Parameters
   public static Iterable<Object[]> getCases() {
     return Arrays.asList(
       new Object[][] {
-        { new SumProductContextFactory(), new RoundRobinClusterGraphCalibrationContextFactory() },
-        { new BeliefUpdateContextFactory(), new RoundRobinClusterGraphCalibrationContextFactory() }
+        { new SumProductContextFactory(), new RoundRobinCalibrationContextFactory() },
+        { new BeliefUpdateContextFactory(), new RoundRobinCalibrationContextFactory() },
+        { new SumProductContextFactory(), new PrioritizedCalibrationContextFactory() },
+        { new BeliefUpdateContextFactory(), new PrioritizedCalibrationContextFactory() }
       }
     );
   }
@@ -147,7 +150,7 @@ public class ClusterGraphInferenceTest {
 
   @Test
   public void testApproximateInference() {
-    ExactInferencer inferencer = new ClusterGraphInferencer(clusterGraph, messagePassingContextFactory, calibrationContextFactory);
+    ClusterGraphInferencer inferencer = new ClusterGraphInferencer(clusterGraph, messagePassingContextFactory, calibrationContextFactory);
 
     DiscreteFactor exactAMarginal = fullFactor.marginal(clusterGraph.getScope().subScope("A"));
     double expectedA0Prob = exactAMarginal.getValueAtIndex(0);

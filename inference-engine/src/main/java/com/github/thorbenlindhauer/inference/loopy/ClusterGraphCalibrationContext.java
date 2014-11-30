@@ -13,12 +13,13 @@
 package com.github.thorbenlindhauer.inference.loopy;
 
 import com.github.thorbenlindhauer.cluster.messagepassing.Message;
+import com.github.thorbenlindhauer.cluster.messagepassing.MessageListener;
 
 /**
  * @author Thorben
  *
  */
-public interface ClusterGraphCalibrationContext {
+public interface ClusterGraphCalibrationContext extends MessageListener {
 
   Message getNextUncalibratedMessage();
 }
