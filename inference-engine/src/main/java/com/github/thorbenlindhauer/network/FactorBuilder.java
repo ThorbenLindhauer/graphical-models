@@ -12,9 +12,9 @@
 */
 package com.github.thorbenlindhauer.network;
 
-public interface FactorBuilder {
+public interface FactorBuilder<T> {
 
-  FactorBuilder scope(String... variableIds);
-  
-  ModelBuilder basedOnTable(double[] table);
+  FactorBuilder<T> scope(String... variableIds);
+
+  T basedOnTable(double[] table);
 }

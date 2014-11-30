@@ -10,16 +10,16 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.github.thorbenlindhauer.inference;
+package com.github.thorbenlindhauer.inference.loopy;
 
-import com.github.thorbenlindhauer.inference.variableelimination.RandomEliminationStrategy;
-import com.github.thorbenlindhauer.network.GraphicalModel;
+import com.github.thorbenlindhauer.cluster.ClusterGraph;
+import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingContext;
 
-public class VariableEliminationRandomInferencerTest extends ExactInferencerTest {
+/**
+ * @author Thorben
+ *
+ */
+public interface ClusterGraphCalibrationContextFactory {
 
-  @Override
-  protected ExactInferencer getInferencer(GraphicalModel graphicalModel) {
-    return new VariableEliminationInferencer(graphicalModel, new RandomEliminationStrategy());
-  }
-
+  ClusterGraphCalibrationContext buildCalibrationContext(ClusterGraph clusterGraph, MessagePassingContext messagePassingContext);
 }

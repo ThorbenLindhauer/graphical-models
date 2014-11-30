@@ -12,32 +12,39 @@
 */
 package com.github.thorbenlindhauer.inference;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.github.thorbenlindhauer.cluster.Cluster;
 import com.github.thorbenlindhauer.cluster.ClusterGraph;
-import com.github.thorbenlindhauer.cluster.Edge;
 import com.github.thorbenlindhauer.cluster.messagepassing.Message;
+import com.github.thorbenlindhauer.cluster.messagepassing.MessageListener;
 import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingContext;
 import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingContextFactory;
 import com.github.thorbenlindhauer.exception.ModelStructureException;
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.inference.loopy.ClusterGraphCalibrationContext;
+import com.github.thorbenlindhauer.inference.loopy.ClusterGraphCalibrationContextFactory;
 import com.github.thorbenlindhauer.variable.Scope;
 
 //TODO: think about interface "IncrementalInferencer" that allows to submit observations incrementally
-public class CliqueTreeInferencer implements ExactInferencer {
+public class ClusterGraphInferencer implements ExactInferencer {
+
+  protected static final int MAX_ITERATIONS_PER_EDGE = 10;
 
   protected ClusterGraph clusterGraph;
-  protected Cluster rootCluster;
   protected boolean messagesPropagated = false;
   protected MessagePassingContext messagePassingContext;
+  protected ClusterGraphCalibrationContext calibrationContext;
+  protected List<MessageListener> messagePassingListeners;
 
-  public CliqueTreeInferencer(ClusterGraph clusterGraph, Cluster rootCluster, MessagePassingContextFactory messageContextFactory) {
+  public ClusterGraphInferencer(ClusterGraph clusterGraph, MessagePassingContextFactory messageContextFactory, ClusterGraphCalibrationContextFactory calibrationContextFactory) {
     this.clusterGraph = clusterGraph;
-    this.rootCluster = rootCluster;
     this.messagePassingContext = messageContextFactory.newMessagePassingContext(clusterGraph);
+    this.calibrationContext = calibrationContextFactory.buildCalibrationContext(clusterGraph, messagePassingContext);
+
+    this.messagePassingListeners = new ArrayList<MessageListener>();
+    messagePassingListeners.add(messagePassingContext);
   }
 
   public double jointProbability(Scope projection, int[] variableAssignment) {
@@ -77,56 +84,28 @@ public class CliqueTreeInferencer implements ExactInferencer {
   }
 
   protected void propagateMessages() {
-    // forward pass (beginning at leaves)
-    Set<Message> initialForwardMessages = new HashSet<Message>();
-    for (Cluster cluster : clusterGraph.getClusters()) {
-      // determine the initial messages
-      if (cluster != rootCluster && cluster.getEdges().size() == 1) {
-        Edge outEdge = cluster.getEdges().iterator().next();
-        initialForwardMessages.add(messagePassingContext.getMessage(outEdge, cluster));
-      }
+    int currentIteration = 0;
+    Message nextMessage = calibrationContext.getNextUncalibratedMessage();
+
+    // TODO: write log if calibration ends due to max iterations reached
+    while (nextMessage != null && currentIteration < MAX_ITERATIONS_PER_EDGE * clusterGraph.getEdges().size()) {
+      nextMessage.update(messagePassingContext);
+      notifyListeners(MessageListener.UPDATE_EVENT, nextMessage);
+
+      nextMessage = calibrationContext.getNextUncalibratedMessage();
+      currentIteration++;
     }
-
-    executeMessagePass(initialForwardMessages, true);
-
-    // backward pass (beginning at root)
-    Set<Message> initialBackwardMessages = new HashSet<Message>();
-    for (Edge rootOutEdge : rootCluster.getEdges()) {
-      initialBackwardMessages.add(messagePassingContext.getMessage(rootOutEdge, rootCluster));
-    }
-
-    executeMessagePass(initialBackwardMessages, false);
 
     messagesPropagated = true;
   }
 
-  protected void executeMessagePass(Set<Message> initialMessages, boolean isForwardPass) {
-    Set<Edge> processedEdges = new HashSet<Edge>();
-    Set<Message> currentMessages = initialMessages;
-
-    while (!currentMessages.isEmpty()) {
-      Iterator<Message> it = currentMessages.iterator();
-      Message currentMessage = it.next();
-      it.remove();
-
-      currentMessage.update(messagePassingContext);
-      processedEdges.add(currentMessage.getEdge());
-
-      Cluster targetCluster = currentMessage.getTargetCluster();
-      if (targetCluster != rootCluster) {
-        Set<Edge> targetOutEdges = targetCluster.getOtherEdges(currentMessage.getEdge());
-
-        for (Edge targetOutEdge : targetOutEdges) {
-          // Only add the message for the out edge, if it has not yet been computed in this message pass.
-          // If this is a forward pass (i.e. the first pass), we additionally need to check
-          // whether the incoming messages are already all available (ie. the candidate out message has no more pending in messages)
-          if (!processedEdges.contains(targetOutEdge) &&
-              (!isForwardPass || processedEdges.containsAll(targetCluster.getOtherEdges(targetOutEdge)))) {
-            currentMessages.add(messagePassingContext.getMessage(targetOutEdge, targetCluster));
-          }
-        }
-      }
+  protected void notifyListeners(String event, Message nextMessage) {
+    for (MessageListener listener : messagePassingListeners) {
+      listener.notify(event, nextMessage);
     }
   }
 
+  public void addMessageListener(MessageListener messageListener) {
+    this.messagePassingListeners.add(messageListener);
+  }
 }

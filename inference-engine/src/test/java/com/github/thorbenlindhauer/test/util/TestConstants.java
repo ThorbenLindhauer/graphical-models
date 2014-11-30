@@ -10,16 +10,15 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.github.thorbenlindhauer.inference;
+package com.github.thorbenlindhauer.test.util;
 
-import com.github.thorbenlindhauer.inference.variableelimination.RandomEliminationStrategy;
-import com.github.thorbenlindhauer.network.GraphicalModel;
+import org.assertj.core.data.Offset;
 
-public class VariableEliminationRandomInferencerTest extends ExactInferencerTest {
+/**
+ * @author Thorben
+ *
+ */
+public class TestConstants {
 
-  @Override
-  protected ExactInferencer getInferencer(GraphicalModel graphicalModel) {
-    return new VariableEliminationInferencer(graphicalModel, new RandomEliminationStrategy());
-  }
-
+  public static final Offset<Double> DOUBLE_VALUE_TOLERANCE = Offset.offset(0.00001d);
 }

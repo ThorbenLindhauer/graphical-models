@@ -10,16 +10,15 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.github.thorbenlindhauer.inference;
+package com.github.thorbenlindhauer.cluster.messagepassing;
 
-import com.github.thorbenlindhauer.inference.variableelimination.RandomEliminationStrategy;
-import com.github.thorbenlindhauer.network.GraphicalModel;
+import com.github.thorbenlindhauer.Listener;
 
-public class VariableEliminationRandomInferencerTest extends ExactInferencerTest {
+/**
+ * @author Thorben
+ *
+ */
+public interface MessageListener extends Listener<Message> {
 
-  @Override
-  protected ExactInferencer getInferencer(GraphicalModel graphicalModel) {
-    return new VariableEliminationInferencer(graphicalModel, new RandomEliminationStrategy());
-  }
-
+  public static final String UPDATE_EVENT = "update";
 }

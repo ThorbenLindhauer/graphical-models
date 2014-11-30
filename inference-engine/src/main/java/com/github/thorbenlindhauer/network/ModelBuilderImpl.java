@@ -22,20 +22,20 @@ public class ModelBuilderImpl implements ModelBuilder {
 
   protected Set<DiscreteFactor> factors;
   protected Scope scope;
-  
+
   public ModelBuilderImpl(Scope scope) {
     this.factors = new HashSet<DiscreteFactor>();
     this.scope = scope;
   }
-  
-  public FactorBuilder factor() {
+
+  public FactorBuilder<ModelBuilder> factor() {
     return new FactorBuilderImpl(this, scope);
   }
-  
+
   public void addFactor(DiscreteFactor factor) {
     factors.add(factor);
   }
-  
+
   public GraphicalModel build() {
     // TODO: validate model here
     GraphicalModel model = new GraphicalModel(scope, factors);

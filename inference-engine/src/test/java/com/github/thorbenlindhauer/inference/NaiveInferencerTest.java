@@ -12,11 +12,13 @@
 */
 package com.github.thorbenlindhauer.inference;
 
+import com.github.thorbenlindhauer.network.GraphicalModel;
+
 public class NaiveInferencerTest extends ExactInferencerTest {
 
   @Override
-  protected ExactInferencer getInferencer() {
-    return new NaiveInferencer(model);
+  protected ExactInferencer getInferencer(GraphicalModel graphicalModel) {
+    return new NaiveInferencer(graphicalModel);
   }
 
 }

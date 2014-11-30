@@ -12,14 +12,21 @@
 */
 package com.github.thorbenlindhauer.inference;
 
-import com.github.thorbenlindhauer.cluster.messagepassing.BeliefUpdateContextFactory;
 import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingContextFactory;
+import com.github.thorbenlindhauer.cluster.messagepassing.SumProductContextFactory;
+import com.github.thorbenlindhauer.inference.loopy.ClusterGraphCalibrationContextFactory;
+import com.github.thorbenlindhauer.inference.loopy.RoundRobinClusterGraphCalibrationContextFactory;
 
-public class BeliefPropagationCliqueTreeInferencerTest extends AbstractCliqueTreeInferencerTest {
+public class SumProductLoopyBeliefPropagationInferencerTest extends LoopyBeliefPropagationInferencerTest {
 
   @Override
   protected MessagePassingContextFactory getMessagePassingContextFactory() {
-    return new BeliefUpdateContextFactory();
+    return new SumProductContextFactory();
+  }
+
+  @Override
+  protected ClusterGraphCalibrationContextFactory getCalibrationContextFactory() {
+    return new RoundRobinClusterGraphCalibrationContextFactory();
   }
 
 }
