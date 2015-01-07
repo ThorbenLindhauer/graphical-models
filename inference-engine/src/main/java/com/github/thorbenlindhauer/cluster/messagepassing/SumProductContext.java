@@ -12,94 +12,37 @@
 */
 package com.github.thorbenlindhauer.cluster.messagepassing;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.github.thorbenlindhauer.cluster.Cluster;
 import com.github.thorbenlindhauer.cluster.ClusterGraph;
 import com.github.thorbenlindhauer.cluster.Edge;
-import com.github.thorbenlindhauer.exception.InferenceException;
 import com.github.thorbenlindhauer.exception.ModelStructureException;
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
-import com.github.thorbenlindhauer.factor.FactorUtil;
+import com.github.thorbenlindhauer.factor.FactorSet;
 
-public class SumProductContext implements MessagePassingContext {
+public class SumProductContext extends AbstractMessagePassingContext {
 
-  protected Map<Edge, EdgeContext> messages;
-  protected Map<Cluster, DiscreteFactor> jointDistributions;
-  protected Map<Cluster, DiscreteFactor> clusterPotentials;
 
   public SumProductContext(ClusterGraph clusterGraph) {
-    this.messages = new HashMap<Edge, EdgeContext>();
-
-    for (Edge edge : clusterGraph.getEdges()) {
-      this.messages.put(edge, new EdgeContext(edge));
-    }
-
-    this.jointDistributions = new HashMap<Cluster, DiscreteFactor>();
-    this.clusterPotentials = new HashMap<Cluster, DiscreteFactor>();
+    super(clusterGraph);
   }
 
-  @Override
-  public Message getMessage(Edge edge, Cluster sourceCluster) {
-    EdgeContext edgeContext = messages.get(edge);
-
-    if (edgeContext == null) {
-      throw new InferenceException("Edge " + edge + " is not known to this context");
-    }
-
-    return edgeContext.getMessageFrom(sourceCluster);
-  }
-
-  @Override
-  public DiscreteFactor getJointDistribution(Cluster cluster) {
-    DiscreteFactor jointDistribution = jointDistributions.get(cluster);
-
-    if (jointDistribution == null) {
-      jointDistribution = FactorUtil.jointDistribution(cluster.getFactors());
-      jointDistributions.put(cluster, jointDistribution);
-    }
-
-    return jointDistribution;
-  }
-
-  @Override
-  public DiscreteFactor getClusterPotential(Cluster cluster) {
-    ensurePotentialInitialized(cluster);
-    return clusterPotentials.get(cluster);
-  }
-
-  protected void ensurePotentialInitialized(Cluster cluster) {
-    DiscreteFactor potential = clusterPotentials.get(cluster);
-
-    if (potential == null) {
-      potential = calculatePotential(cluster);
-
-      clusterPotentials.put(cluster, potential);
-    }
-  }
-
-  protected DiscreteFactor calculatePotential(Cluster cluster) {
-    DiscreteFactor potential = getJointDistribution(cluster);
+  protected DiscreteFactor calculateClusterPotential(Cluster cluster) {
+    FactorSet inMessageFactors = new FactorSet();
 
     for (Edge edge : cluster.getEdges()) {
       Message inMessage = getMessage(edge, edge.getTarget(cluster));
-      DiscreteFactor messagePotential = inMessage.getPotential();
+      FactorSet messagePotential = inMessage.getPotential();
 
       // ignore null potentials
-      if (potential == null) {
-        potential = messagePotential;
-      } else if (messagePotential != null) {
-        potential = potential.product(messagePotential);
+      if (messagePotential != null) {
+        inMessageFactors.product(messagePotential);
       }
     }
 
-    return potential;
-  }
+    FactorSet potentialFactors = cluster.getResolver().project(inMessageFactors, cluster.getScope());
+    DiscreteFactor potential = potentialFactors.toFactor();
 
-  @Override
-  public void updateClusterPotential(Cluster cluster, DiscreteFactor factor) {
-    throw new UnsupportedOperationException("Cannot update potentials from outside for this context");
+    return potential;
   }
 
   protected static class EdgeContext {
@@ -129,10 +72,13 @@ public class SumProductContext implements MessagePassingContext {
   }
 
   @Override
-  public void notify(String eventName, Message message) {
-    if (MessageListener.UPDATE_EVENT.equals(eventName)) {
-      // invalidate cached target cluster potential
-      clusterPotentials.put(message.getTargetCluster(), null);
-    }
+  public FactorSet getClusterMessages(Cluster cluster) {
+    throw new UnsupportedOperationException("not implemented; not required for sum product algorithm");
   }
+
+  @Override
+  protected Message newMessage(Cluster sourceCluster, Edge edge) {
+    return new SumProductMessage(sourceCluster, edge);
+  }
+
 }

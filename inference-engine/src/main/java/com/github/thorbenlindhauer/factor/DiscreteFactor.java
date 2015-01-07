@@ -31,6 +31,8 @@ public interface DiscreteFactor {
 
   DiscreteFactor normalize();
 
+  DiscreteFactor invert();
+
   Scope getVariables();
 
   double getValueForAssignment(int[] assignment);

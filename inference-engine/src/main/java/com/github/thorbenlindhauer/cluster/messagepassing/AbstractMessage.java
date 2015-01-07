@@ -12,11 +12,9 @@
 */
 package com.github.thorbenlindhauer.cluster.messagepassing;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.github.thorbenlindhauer.cluster.Cluster;
 import com.github.thorbenlindhauer.cluster.Edge;
+import com.github.thorbenlindhauer.exception.ModelStructureException;
 import com.github.thorbenlindhauer.factor.FactorSet;
 
 /**
@@ -24,30 +22,42 @@ import com.github.thorbenlindhauer.factor.FactorSet;
  *
  * @author Thorben
  */
-public class SumProductMessage extends AbstractMessage {
+public abstract class AbstractMessage implements Message {
 
-  public SumProductMessage(Cluster cluster, Edge edge) {
-    super(cluster, edge);
+  protected Cluster sourceCluster;
+  protected FactorSet potential;
+
+  protected Edge edge;
+
+  public AbstractMessage(Cluster cluster, Edge edge) {
+    this.edge = edge;
+    if (!edge.connects(cluster)) {
+      throw new ModelStructureException("Invalid message: Cluster " + cluster + " is not involved in edge " + edge);
+    }
+
+    this.sourceCluster = cluster;
   }
 
   @Override
-  public void update(MessagePassingContext messagePassingContext) {
-    Set<Message> inMessages = new HashSet<Message>();
-    Set<Edge> inEdges = sourceCluster.getOtherEdges(edge);
+  public abstract void update(MessagePassingContext messagePassingContext);
 
-    for (Edge inEdge : inEdges) {
-      inMessages.add(messagePassingContext.getMessage(inEdge, inEdge.getTarget(sourceCluster)));
-    }
+  @Override
+  public FactorSet getPotential() {
+    return potential;
+  }
 
-    FactorSet inMessagePotentials = new FactorSet();
+  @Override
+  public Cluster getTargetCluster() {
+    return edge.getTarget(sourceCluster);
+  }
 
-    for (Message inMessage : inMessages) {
-      FactorSet inMessagePotential = inMessage.getPotential();
-      if (inMessagePotential != null) {
-        inMessagePotentials.product(inMessagePotential);
-      }
-    }
+  @Override
+  public Cluster getSourceCluster() {
+    return sourceCluster;
+  }
 
-    potential = sourceCluster.getResolver().project(inMessagePotentials, edge.getScope());
+  @Override
+  public Edge getEdge() {
+    return edge;
   }
 }

@@ -19,60 +19,37 @@ import com.github.thorbenlindhauer.cluster.Cluster;
 import com.github.thorbenlindhauer.cluster.ClusterGraph;
 import com.github.thorbenlindhauer.cluster.Edge;
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
-import com.github.thorbenlindhauer.factor.FactorUtil;
+import com.github.thorbenlindhauer.factor.FactorSet;
 
-public class BeliefUpdateContext implements MessagePassingContext {
+public class BeliefUpdateContext extends AbstractMessagePassingContext {
 
-  protected Map<Edge, BeliefUpdateMessage> messages;
-  protected Map<Cluster, DiscreteFactor> clusterPotentials;
+  protected Map<Cluster, FactorSet> clusterMessages;
 
   public BeliefUpdateContext(ClusterGraph clusterGraph) {
+    super(clusterGraph);
     initializeClusterPotentials(clusterGraph);
-    initializeMessages(clusterGraph);
-  }
-
-  protected void initializeMessages(ClusterGraph clusterGraph) {
-    this.messages = new HashMap<Edge, BeliefUpdateMessage>();
-    for (Edge edge : clusterGraph.getEdges()) {
-      BeliefUpdateMessage message = new BeliefUpdateMessage(edge);
-      messages.put(edge, message);
-    }
-
   }
 
   protected void initializeClusterPotentials(ClusterGraph clusterGraph) {
-    clusterPotentials = new HashMap<Cluster, DiscreteFactor>();
+    clusterMessages = new HashMap<Cluster, FactorSet>();
 
     for (Cluster cluster : clusterGraph.getClusters()) {
-      clusterPotentials.put(cluster, FactorUtil.jointDistribution(cluster.getFactors()));
+      clusterMessages.put(cluster, new FactorSet());
     }
   }
 
   @Override
-  public Message getMessage(Edge edge, Cluster sourceCluster) {
-    BeliefUpdateMessage message = messages.get(edge);
-    BeliefUpdateMessageWrapper wrapper = message.wrapAsDirectedMessage(edge.getTarget(sourceCluster));
-
-    return wrapper;
+  public DiscreteFactor calculateClusterPotential(Cluster cluster) {
+    return cluster.getResolver().project(clusterMessages.get(cluster), cluster.getScope()).toFactor();
   }
 
   @Override
-  public DiscreteFactor getJointDistribution(Cluster cluster) {
-    throw new UnsupportedOperationException("This context does not cache joint distributions");
+  public FactorSet getClusterMessages(Cluster cluster) {
+    return clusterMessages.get(cluster);
   }
 
   @Override
-  public DiscreteFactor getClusterPotential(Cluster cluster) {
-    return clusterPotentials.get(cluster);
-  }
-
-  @Override
-  public void updateClusterPotential(Cluster cluster, DiscreteFactor factor) {
-    clusterPotentials.put(cluster, factor);
-  }
-
-  @Override
-  public void notify(String eventName, Message object) {
-    // do nothing
+  protected Message newMessage(Cluster sourceCluster, Edge edge) {
+    return new BeliefUpdateMessage(sourceCluster, edge);
   }
 }

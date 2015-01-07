@@ -15,6 +15,7 @@ package com.github.thorbenlindhauer.cluster.messagepassing;
 import com.github.thorbenlindhauer.cluster.Cluster;
 import com.github.thorbenlindhauer.cluster.Edge;
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.FactorSet;
 
 public interface MessagePassingContext extends MessageListener {
 
@@ -22,7 +23,6 @@ public interface MessagePassingContext extends MessageListener {
 
   DiscreteFactor getClusterPotential(Cluster cluster);
 
-  DiscreteFactor getJointDistribution(Cluster cluster);
+  FactorSet getClusterMessages(Cluster cluster);
 
-  void updateClusterPotential(Cluster cluster, DiscreteFactor factor);
 }

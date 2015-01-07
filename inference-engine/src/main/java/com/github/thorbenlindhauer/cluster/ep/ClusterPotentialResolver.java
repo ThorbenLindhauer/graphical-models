@@ -10,23 +10,19 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.github.thorbenlindhauer.cluster.messagepassing;
+package com.github.thorbenlindhauer.cluster.ep;
 
-import com.github.thorbenlindhauer.cluster.Cluster;
-import com.github.thorbenlindhauer.cluster.Edge;
+import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.factor.FactorSet;
+import com.github.thorbenlindhauer.variable.Scope;
 
+/**
+ * @author Thorben
+ *
+ */
+public interface ClusterPotentialResolver<M extends DiscreteFactor> {
 
-public interface Message {
+  FactorSet project(FactorSet additionalFactors, Scope projectionScope);
 
-  void update(MessagePassingContext messagePassingContext);
-
-  FactorSet getPotential();
-
-  Edge getEdge();
-
-  Cluster getTargetCluster();
-
-  Cluster getSourceCluster();
 
 }

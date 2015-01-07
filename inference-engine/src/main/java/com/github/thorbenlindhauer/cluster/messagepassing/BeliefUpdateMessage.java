@@ -2,7 +2,7 @@ package com.github.thorbenlindhauer.cluster.messagepassing;
 
 import com.github.thorbenlindhauer.cluster.Cluster;
 import com.github.thorbenlindhauer.cluster.Edge;
-import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.FactorSet;
 
 /* Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -16,44 +16,33 @@ import com.github.thorbenlindhauer.factor.DiscreteFactor;
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-public class BeliefUpdateMessage {
+public class BeliefUpdateMessage extends AbstractMessage {
 
-  protected DiscreteFactor potential;
-  protected Edge edge;
-
-  public BeliefUpdateMessage(Edge edge) {
-    this.edge = edge;
+  public BeliefUpdateMessage(Cluster cluster, Edge edge) {
+    super(cluster, edge);
   }
-  
-  public void update(MessagePassingContext messagePassingContext, Cluster sourceCluster, Cluster targetCluster) {
-    DiscreteFactor newPotential = messagePassingContext.getClusterPotential(sourceCluster).marginal(edge.getScope());
-    
-    DiscreteFactor targetUpdate = newPotential;
+
+  @Override
+  public void update(MessagePassingContext messagePassingContext) {
+    Cluster targetCluster = edge.getTarget(sourceCluster);
+
+    FactorSet messagesForSourceCluster = messagePassingContext.getClusterMessages(sourceCluster);
+    FactorSet sourceClusterPotentialProjection =
+        sourceCluster.getResolver().project(messagesForSourceCluster, edge.getScope());
+
+    FactorSet messagesForTargetCluster = messagePassingContext.getClusterMessages(targetCluster);
     if (potential != null) {
-      targetUpdate = newPotential.division(potential);
+      messagesForTargetCluster.division(potential);
     }
 
-    DiscreteFactor newTargetPotential = targetUpdate;
-    
-    DiscreteFactor targetPotential = messagePassingContext.getClusterPotential(targetCluster);
-    if (targetPotential != null) {
-      newTargetPotential = newTargetPotential.product(targetPotential);
+    potential = sourceClusterPotentialProjection;
+
+    FactorSet reverseMessage = messagePassingContext.getMessage(edge, targetCluster).getPotential();
+    if (reverseMessage != null) {
+      potential.division(reverseMessage);
     }
-    
-    messagePassingContext.updateClusterPotential(targetCluster, newTargetPotential);
-    
-    potential = newPotential;
+
+    messagesForTargetCluster.product(potential);
   }
 
-  public BeliefUpdateMessageWrapper wrapAsDirectedMessage(Cluster targetCluster) {
-    return new BeliefUpdateMessageWrapper(this, targetCluster);
-  }
-  
-  public Edge getEdge() {
-    return edge;
-  }
-  
-  public DiscreteFactor getPotential() {
-    return potential;
-  }
 }

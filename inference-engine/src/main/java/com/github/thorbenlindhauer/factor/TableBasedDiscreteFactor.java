@@ -257,6 +257,11 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
     return values[index];
   }
 
+  @Override
+  public DiscreteFactor invert() {
+    return invertValuesBy(1.0d);
+  }
+
   public TableBasedDiscreteFactor normalize() {
     return normalizeValuesBy(sumValues());
   }
@@ -269,6 +274,17 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
     }
 
     return valueSum;
+  }
+
+  protected TableBasedDiscreteFactor invertValuesBy(double constant) {
+    double[] newValues = new double[values.length];
+    for (int i = 0; i < values.length; i++) {
+      if (values[i] != 0) {
+        newValues[i] = constant / values[i];
+      }
+    }
+
+    return new TableBasedDiscreteFactor(variables, newValues);
   }
 
   protected TableBasedDiscreteFactor normalizeValuesBy(double normalizationConstant) {
