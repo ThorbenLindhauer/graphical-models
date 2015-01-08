@@ -10,21 +10,26 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.github.thorbenlindhauer.variable;
+package com.github.thorbenlindhauer.factor;
 
-public class DiscreteVariable extends Variable {
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 
-  protected int cardinality;
 
-  public DiscreteVariable(String id, int cardinality) {
-    super(id);
-    this.cardinality = cardinality;
-  }
 
-  public int getCardinality() {
-    return cardinality;
-  }
-  public void setCardinality(int cardinality) {
-    this.cardinality = cardinality;
-  }
+/**
+ * @author Thorben
+ *
+ */
+public interface GaussianFactor extends Factor<GaussianFactor> {
+
+  public RealMatrix getCovarianceMatrix();
+
+  public RealVector getMeanVector();
+
+  public RealMatrix getPrecisionMatrix();
+
+  public RealVector getScaledMeanVector();
+
+  public double getNormalizationConstant();
 }

@@ -25,9 +25,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.github.thorbenlindhauer.cluster.generation.CliqueTreeGenerator;
-import com.github.thorbenlindhauer.cluster.generation.ClusterGraphExportListener;
 import com.github.thorbenlindhauer.cluster.messagepassing.BeliefUpdateContextFactory;
 import com.github.thorbenlindhauer.cluster.messagepassing.SumProductContextFactory;
+import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.importer.xmlbif.XMLBIFImporter;
 import com.github.thorbenlindhauer.inference.ExactInferencer;
 import com.github.thorbenlindhauer.inference.GeneratedCliqueTreeInferencer;
@@ -41,7 +41,7 @@ import com.github.thorbenlindhauer.network.GraphicalModel;
 public class WorkScenario {
 
   protected InputStream inputStream;
-  protected GraphicalModel graphicalModel;
+  protected GraphicalModel<DiscreteFactor> graphicalModel;
 
   protected Offset<Double> TOLERATED_OFFSET = Offset.offset(0.0001d);
 
@@ -49,9 +49,9 @@ public class WorkScenario {
   public void setUp() {
     inputStream = loadClasspathFile("work.xmlbif");
 
-    GraphicalModelImporter importer = new XMLBIFImporter();
+    GraphicalModelImporter<DiscreteFactor> importer = new XMLBIFImporter();
 
-    List<GraphicalModel> graphicalModels = importer.importFromStream(inputStream);
+    List<GraphicalModel<DiscreteFactor>> graphicalModels = importer.importFromStream(inputStream);
     graphicalModel = graphicalModels.get(0);
   }
 

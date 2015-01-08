@@ -22,8 +22,8 @@ import com.github.thorbenlindhauer.cluster.Cluster;
 import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.factorgraph.FactorGraph;
 import com.github.thorbenlindhauer.factorgraph.FactorGraphNode;
-import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.Scope;
+import com.github.thorbenlindhauer.variable.Variable;
 
 public class MaximumCardinalityCliqueOperation<T extends Factor<T>> implements FactorGraphOperation<Set<Cluster<T>>, T> {
 
@@ -79,7 +79,7 @@ public class MaximumCardinalityCliqueOperation<T extends Factor<T>> implements F
 
 
   protected Cluster<T> clusterFromNodes(Set<FactorGraphNode<T>> currentClique, Set<T> assignedFactors) {
-    Set<DiscreteVariable> variables = new HashSet<DiscreteVariable>();
+    Set<Variable> variables = new HashSet<Variable>();
 
     for (FactorGraphNode<T> node : currentClique) {
       variables.add(node.getVariable());

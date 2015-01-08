@@ -18,9 +18,9 @@ import java.util.Set;
 
 import com.github.thorbenlindhauer.exception.FactorOperationException;
 import com.github.thorbenlindhauer.exception.ModelStructureException;
-import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.IndexCoder;
 import com.github.thorbenlindhauer.variable.Scope;
+import com.github.thorbenlindhauer.variable.Variable;
 
 /**
  * Factors are immutable.
@@ -44,7 +44,7 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
 
   // TODO: think about making this a varargs method
   public TableBasedDiscreteFactor product(DiscreteFactor other) {
-    Set<DiscreteVariable> newVars = new HashSet<DiscreteVariable>();
+    Set<Variable> newVars = new HashSet<Variable>();
     newVars.addAll(this.variables.getVariables());
     newVars.addAll(other.getVariables().getVariables());
 
@@ -55,11 +55,11 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
     int[] newCardinalities = indexCoder.getCardinalities();
 
     IndexCoder thisIndexCoder = variables.getIndexCoder();
-    int[] thisVariableMapping = newVariables.createMapping(variables);
+    int[] thisVariableMapping = newVariables.createDiscreteVariableMapping(variables);
     int[] thisStrides = thisIndexCoder.getStrides();
 
     IndexCoder otherIndexCoder = other.getVariables().getIndexCoder();
-    int[] otherVariableMapping = newVariables.createMapping(other.getVariables());
+    int[] otherVariableMapping = newVariables.createDiscreteVariableMapping(other.getVariables());
     int[] otherStrides = otherIndexCoder.getStrides();
 
     int[] assignment = new int[newVariables.size()];
@@ -119,7 +119,7 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
     int[] cardinalities = indexCoder.getCardinalities();
 
     IndexCoder otherIndexCoder = other.getVariables().getIndexCoder();
-    int[] otherVariableMapping = newVariables.createMapping(other.getVariables());
+    int[] otherVariableMapping = newVariables.createDiscreteVariableMapping(other.getVariables());
     int[] otherStrides = otherIndexCoder.getStrides();
 
     for (int i = 0; i < newValues.length; i++) {
@@ -168,7 +168,7 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
     double[] newValues = new double[newScope.getNumDistinctValues()];
     int newValuesIdx = 0;
     int[] newStrides = newScope.getIndexCoder().getStrides();
-    int[] mapping = variables.createMapping(newScope);
+    int[] mapping = variables.createDiscreteVariableMapping(newScope);
 
     int[] thisCardinalities = variables.getIndexCoder().getCardinalities();
     int[] thisAssignment = new int[variables.size()];
@@ -211,7 +211,7 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
 
 
     double[] newValues = new double[values.length];
-    int[] mapping = variables.createMapping(scope);
+    int[] mapping = variables.createDiscreteVariableMapping(scope);
 
     for (int i = 0; i < values.length; i++) {
       // TODO: improve this, potential for precomputation before the loop

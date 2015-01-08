@@ -24,8 +24,8 @@ import com.github.thorbenlindhauer.cluster.ClusterGraph;
 import com.github.thorbenlindhauer.factor.DefaultFactorFactory;
 import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.network.GraphicalModel;
-import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.Scope;
+import com.github.thorbenlindhauer.variable.Variable;
 
 /**
  * @author Thorben
@@ -38,7 +38,7 @@ public class BetheClusterGraphGenerator {
 
     // create a cluster for each variable
     Map<String, Cluster<T>> variableClusters = new HashMap<String, Cluster<T>>();
-    for (DiscreteVariable variable : graphicalModel.getScope().getVariables()) {
+    for (Variable variable : graphicalModel.getScope().getVariables()) {
       Scope scope = new Scope(Arrays.asList(variable));
       T defaultFactor = defaultFactorFactory.build(scope);
       Cluster<T> variableCluster = new Cluster<T>(Collections.singleton(defaultFactor));

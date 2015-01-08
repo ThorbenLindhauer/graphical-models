@@ -18,19 +18,19 @@ import java.util.Map;
 import java.util.Set;
 
 import com.github.thorbenlindhauer.factor.Factor;
-import com.github.thorbenlindhauer.variable.DiscreteVariable;
+import com.github.thorbenlindhauer.variable.Variable;
 
 public class FactorGraphNode<T extends Factor<T>> {
 
-  protected DiscreteVariable variable;
-  protected Map<DiscreteVariable, FactorGraphEdge<T>> edges;
+  protected Variable variable;
+  protected Map<Variable, FactorGraphEdge<T>> edges;
 
   /** all the factors that the variable represented by this node is involved in */
   protected Set<T> factors;
 
-  public FactorGraphNode(DiscreteVariable variable) {
+  public FactorGraphNode(Variable variable) {
     this.variable = variable;
-    this.edges = new HashMap<DiscreteVariable, FactorGraphEdge<T>>();
+    this.edges = new HashMap<Variable, FactorGraphEdge<T>>();
     this.factors = new HashSet<T>();
   }
 
@@ -42,7 +42,7 @@ public class FactorGraphNode<T extends Factor<T>> {
     return factors;
   }
 
-  public DiscreteVariable getVariable() {
+  public Variable getVariable() {
     return variable;
   }
 
@@ -74,7 +74,7 @@ public class FactorGraphNode<T extends Factor<T>> {
     return edges.get(other.variable);
   }
 
-  public Map<DiscreteVariable, FactorGraphEdge<T>> getEdges() {
+  public Map<Variable, FactorGraphEdge<T>> getEdges() {
     return edges;
   }
 
@@ -84,7 +84,7 @@ public class FactorGraphNode<T extends Factor<T>> {
     sb.append("[");
     sb.append(variable.getId());
     sb.append("] => [");
-    for (DiscreteVariable connectedVariable : edges.keySet()) {
+    for (Variable connectedVariable : edges.keySet()) {
       sb.append(connectedVariable.getId());
       sb.append(", ");
     }

@@ -22,12 +22,12 @@ import java.util.Map;
 import java.util.Set;
 
 import com.github.thorbenlindhauer.factor.Factor;
-import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.Scope;
+import com.github.thorbenlindhauer.variable.Variable;
 
 public class FactorGraph<T extends Factor<T>> {
 
-  protected Map<DiscreteVariable, FactorGraphNode<T>> nodes;
+  protected Map<Variable, FactorGraphNode<T>> nodes;
   protected Set<FactorGraphEdge<T>> edges;
   protected Scope scope;
 
@@ -36,7 +36,7 @@ public class FactorGraph<T extends Factor<T>> {
   }
 
   public FactorGraph(Collection<FactorGraphNode<T>> nodes, Collection<FactorGraphEdge<T>> edges) {
-    this.nodes = new HashMap<DiscreteVariable, FactorGraphNode<T>>();
+    this.nodes = new HashMap<Variable, FactorGraphNode<T>>();
     for (FactorGraphNode<T> node : nodes) {
       this.nodes.put(node.getVariable(), node);
     }
@@ -46,12 +46,12 @@ public class FactorGraph<T extends Factor<T>> {
   }
 
 
-  public Map<DiscreteVariable, FactorGraphNode<T>> getNodes() {
+  public Map<Variable, FactorGraphNode<T>> getNodes() {
     return nodes;
   }
 
   public FactorGraphNode<T> getNode(String variableId) {
-    DiscreteVariable variable = scope.getVariable(variableId);
+    Variable variable = scope.getVariable(variableId);
     return nodes.get(variable);
   }
 
@@ -81,10 +81,10 @@ public class FactorGraph<T extends Factor<T>> {
    * Returns a moralized factor graph that represents the structure implicitly encoded in the factor scopes
    */
   public static <T extends Factor<T>> FactorGraph<T> fromGraphicalModel(Set<T> factors) {
-    Map<DiscreteVariable, FactorGraphNode<T>> nodes = new HashMap<DiscreteVariable, FactorGraphNode<T>>();
+    Map<Variable, FactorGraphNode<T>> nodes = new HashMap<Variable, FactorGraphNode<T>>();
 
     for (T factor : factors) {
-      for (DiscreteVariable variable : factor.getVariables().getVariables()) {
+      for (Variable variable : factor.getVariables().getVariables()) {
         FactorGraphNode<T> node = nodes.get(variable);
 
         if (node == null) {
@@ -101,7 +101,7 @@ public class FactorGraph<T extends Factor<T>> {
     for (T factor : factors) {
       Set<FactorGraphNode<T>> nodesForFactor = new HashSet<FactorGraphNode<T>>();
 
-      for (DiscreteVariable variable : factor.getVariables().getVariables()) {
+      for (Variable variable : factor.getVariables().getVariables()) {
         nodesForFactor.add(nodes.get(variable));
       }
 

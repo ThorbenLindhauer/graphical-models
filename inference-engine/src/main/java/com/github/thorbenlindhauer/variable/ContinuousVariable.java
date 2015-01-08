@@ -12,19 +12,14 @@
 */
 package com.github.thorbenlindhauer.variable;
 
-public class DiscreteVariable extends Variable {
+/**
+ * @author Thorben
+ *
+ */
+public class ContinuousVariable extends Variable {
 
-  protected int cardinality;
-
-  public DiscreteVariable(String id, int cardinality) {
+  public ContinuousVariable(String id) {
     super(id);
-    this.cardinality = cardinality;
   }
 
-  public int getCardinality() {
-    return cardinality;
-  }
-  public void setCardinality(int cardinality) {
-    this.cardinality = cardinality;
-  }
 }

@@ -23,8 +23,8 @@ import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.factor.FactorUtil;
 import com.github.thorbenlindhauer.inference.variableelimination.VariableEliminationStrategy;
 import com.github.thorbenlindhauer.network.GraphicalModel;
-import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.Scope;
+import com.github.thorbenlindhauer.variable.Variable;
 
 /**
  * Implements Variable Elimination (VE), an exact inferencing algorithm that employs
@@ -115,7 +115,7 @@ public class VariableEliminationInferencer implements ExactInferencer {
   }
 
   protected void validateEliminationOrder(GraphicalModel<DiscreteFactor> model, Scope scope, List<String> variableEliminationOrder) {
-    for (DiscreteVariable modelVariable : model.getScope().getVariables()) {
+    for (Variable modelVariable : model.getScope().getVariables()) {
       boolean isProjectionVariable = scope.has(modelVariable);
       boolean isVariableToBeEliminated = variableEliminationOrder.contains(modelVariable.getId());
 
