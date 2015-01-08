@@ -12,7 +12,6 @@
 */
 package com.github.thorbenlindhauer.cluster;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,28 +19,27 @@ import java.util.Set;
 import com.github.thorbenlindhauer.cluster.ep.ClusterPotentialResolver;
 import com.github.thorbenlindhauer.cluster.ep.DefaultPotentialResolver;
 import com.github.thorbenlindhauer.exception.ModelStructureException;
-import com.github.thorbenlindhauer.factor.DiscreteFactor;
-import com.github.thorbenlindhauer.factor.TableBasedDiscreteFactor;
+import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.Scope;
 
-public class Cluster {
+public class Cluster<T extends Factor<T>> {
 
   protected Scope scope;
-  protected Set<Edge> edges;
-  protected Set<DiscreteFactor> factors;
+  protected Set<Edge<T>> edges;
+  protected Set<T> factors;
 
   protected Cluster() {
-    this.edges = new HashSet<Edge>();
+    this.edges = new HashSet<Edge<T>>();
   }
 
-  public Cluster(Scope scope, Set<DiscreteFactor> factors) {
+  public Cluster(Scope scope, Set<T> factors) {
     this();
 
     // initialize scope from factors
     if (scope == null) {
       this.scope = new Scope(Collections.<DiscreteVariable>emptyList());
-      for (DiscreteFactor factor : factors) {
+      for (T factor : factors) {
         this.scope = this.scope.union(factor.getVariables());
       }
     } else {
@@ -52,25 +50,14 @@ public class Cluster {
     this.factors = factors;
   }
 
-  public Cluster(Scope scope) {
-    this();
-
-    this.scope = scope;
-    double[] values = new double[scope.getNumDistinctValues()];
-    Arrays.fill(values, 1);
-    DiscreteFactor constantFactor = new TableBasedDiscreteFactor(scope, values);
-    this.factors = new HashSet<DiscreteFactor>();
-    factors.add(constantFactor);
-  }
-
-  public Cluster(Set<DiscreteFactor> factors) {
+  public Cluster(Set<T> factors) {
     this(null, factors);
   }
 
 
-  public Set<Edge> getOtherEdges(Edge outEdge) {
+  public Set<Edge<T>> getOtherEdges(Edge<T> outEdge) {
     // TODO: cache this?
-    Set<Edge> inEdges = new HashSet<Edge>(edges);
+    Set<Edge<T>> inEdges = new HashSet<Edge<T>>(edges);
     boolean contained = inEdges.remove(outEdge);
 
     if (!contained) {
@@ -80,8 +67,8 @@ public class Cluster {
     return inEdges;
   }
 
-  public Edge connectTo(Cluster other) {
-    Edge newEdge = new Edge(this, other);
+  public Edge<T> connectTo(Cluster<T> other) {
+    Edge<T> newEdge = new Edge<T>(this, other);
     this.edges.add(newEdge);
     other.edges.add(newEdge);
     return newEdge;
@@ -91,16 +78,16 @@ public class Cluster {
     return scope;
   }
 
-  public Set<Edge> getEdges() {
+  public Set<Edge<T>> getEdges() {
     return edges;
   }
 
-  public Set<DiscreteFactor> getFactors() {
+  public Set<T> getFactors() {
     return factors;
   }
 
-  public ClusterPotentialResolver<DiscreteFactor> getResolver() {
-    return new DefaultPotentialResolver(this);
+  public ClusterPotentialResolver<T> getResolver() {
+    return new DefaultPotentialResolver<T>(this);
   }
 
   @Override

@@ -19,5 +19,5 @@ import com.github.thorbenlindhauer.network.GraphicalModel;
 
 public interface VariableEliminationStrategy {
 
-  List<String> getEliminationOrder(GraphicalModel graphicalModel, Collection<String> variablesToEliminate);
+  List<String> getEliminationOrder(GraphicalModel<?> graphicalModel, Collection<String> variablesToEliminate);
 }

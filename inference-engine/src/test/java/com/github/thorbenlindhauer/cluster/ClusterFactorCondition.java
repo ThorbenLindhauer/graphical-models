@@ -14,18 +14,18 @@ package com.github.thorbenlindhauer.cluster;
 
 import org.assertj.core.api.Condition;
 
-import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.Factor;
 
-public class ClusterFactorCondition extends Condition<Cluster> {
+public class ClusterFactorCondition<T extends Factor<T>> extends Condition<Cluster<T>> {
 
-  protected DiscreteFactor factor;
-  
-  public ClusterFactorCondition(DiscreteFactor factor) {
+  protected T factor;
+
+  public ClusterFactorCondition(T factor) {
     this.factor = factor;
   }
-  
+
   @Override
-  public boolean matches(Cluster cluster) {
+  public boolean matches(Cluster<T> cluster) {
     return cluster.getFactors().contains(factor) && cluster.getScope().contains(factor.getVariables());
   }
 }

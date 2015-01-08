@@ -13,12 +13,13 @@
 package com.github.thorbenlindhauer.cluster.messagepassing;
 
 import com.github.thorbenlindhauer.cluster.ClusterGraph;
+import com.github.thorbenlindhauer.factor.Factor;
 
 public class SumProductContextFactory implements MessagePassingContextFactory {
 
   @Override
-  public MessagePassingContext newMessagePassingContext(ClusterGraph clusterGraph) {
-    return new SumProductContext(clusterGraph);
+  public <T extends Factor<T>> MessagePassingContext<T> newMessagePassingContext(ClusterGraph<T> clusterGraph) {
+    return new SumProductContext<T>(clusterGraph);
   }
 
 }

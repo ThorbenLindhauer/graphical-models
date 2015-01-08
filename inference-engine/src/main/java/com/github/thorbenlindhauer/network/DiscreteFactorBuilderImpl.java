@@ -21,19 +21,19 @@ import com.github.thorbenlindhauer.factor.TableBasedDiscreteFactor;
 import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.Scope;
 
-public class FactorBuilderImpl implements FactorBuilder<ModelBuilder> {
+public class DiscreteFactorBuilderImpl implements DiscreteFactorBuilder<DiscreteModelBuilder> {
 
-  protected ModelBuilderImpl modelBuilder;
+  protected DiscreteModelBuilderImpl modelBuilder;
   protected Scope graphScope;
   protected Set<DiscreteVariable> factorVariables;
 
-  public FactorBuilderImpl(ModelBuilderImpl modelBuilder, Scope scope) {
+  public DiscreteFactorBuilderImpl(DiscreteModelBuilderImpl modelBuilder, Scope scope) {
     this.modelBuilder = modelBuilder;
     this.graphScope = scope;
     this.factorVariables = new HashSet<DiscreteVariable>();
   }
 
-  public FactorBuilder<ModelBuilder> scope(String... variableIds) {
+  public DiscreteFactorBuilder<DiscreteModelBuilder> scope(String... variableIds) {
     for (String variableId : variableIds) {
       DiscreteVariable variable = graphScope.getVariable(variableId);
 
@@ -47,7 +47,7 @@ public class FactorBuilderImpl implements FactorBuilder<ModelBuilder> {
     return this;
   }
 
-  public ModelBuilder basedOnTable(double[] table) {
+  public DiscreteModelBuilder basedOnTable(double[] table) {
     Scope factorScope = new Scope(factorVariables);
     DiscreteFactor factor = new TableBasedDiscreteFactor(factorScope, table);
     modelBuilder.addFactor(factor);

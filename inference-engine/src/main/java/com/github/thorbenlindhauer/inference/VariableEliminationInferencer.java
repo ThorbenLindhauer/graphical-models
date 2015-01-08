@@ -34,10 +34,10 @@ import com.github.thorbenlindhauer.variable.Scope;
  */
 public class VariableEliminationInferencer implements ExactInferencer {
 
-  protected GraphicalModel graphicalModel;
+  protected GraphicalModel<DiscreteFactor> graphicalModel;
   protected VariableEliminationStrategy variableEliminationStrategy;
 
-  public VariableEliminationInferencer(GraphicalModel graphicalModel, VariableEliminationStrategy variableEliminationStrategy) {
+  public VariableEliminationInferencer(GraphicalModel<DiscreteFactor> graphicalModel, VariableEliminationStrategy variableEliminationStrategy) {
     this.graphicalModel = graphicalModel;
     this.variableEliminationStrategy = variableEliminationStrategy;
   }
@@ -114,7 +114,7 @@ public class VariableEliminationInferencer implements ExactInferencer {
     return result;
   }
 
-  protected void validateEliminationOrder(GraphicalModel model, Scope scope, List<String> variableEliminationOrder) {
+  protected void validateEliminationOrder(GraphicalModel<DiscreteFactor> model, Scope scope, List<String> variableEliminationOrder) {
     for (DiscreteVariable modelVariable : model.getScope().getVariables()) {
       boolean isProjectionVariable = scope.has(modelVariable);
       boolean isVariableToBeEliminated = variableEliminationOrder.contains(modelVariable.getId());

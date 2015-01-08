@@ -20,7 +20,7 @@ import com.github.thorbenlindhauer.network.GraphicalModel;
 
 public class RandomEliminationStrategy implements VariableEliminationStrategy {
 
-  public List<String> getEliminationOrder(GraphicalModel graphicalModel, Collection<String> variablesToEliminate) {
+  public List<String> getEliminationOrder(GraphicalModel<?> graphicalModel, Collection<String> variablesToEliminate) {
     return Arrays.asList(variablesToEliminate.toArray(new String[]{}));
   }
 

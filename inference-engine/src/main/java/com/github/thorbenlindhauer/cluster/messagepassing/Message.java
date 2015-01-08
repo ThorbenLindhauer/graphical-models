@@ -14,19 +14,20 @@ package com.github.thorbenlindhauer.cluster.messagepassing;
 
 import com.github.thorbenlindhauer.cluster.Cluster;
 import com.github.thorbenlindhauer.cluster.Edge;
+import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.factor.FactorSet;
 
 
-public interface Message {
+public interface Message<T extends Factor<T>> {
 
-  void update(MessagePassingContext messagePassingContext);
+  void update(MessagePassingContext<T> messagePassingContext);
 
-  FactorSet getPotential();
+  FactorSet<T> getPotential();
 
-  Edge getEdge();
+  Edge<T> getEdge();
 
-  Cluster getTargetCluster();
+  Cluster<T> getTargetCluster();
 
-  Cluster getSourceCluster();
+  Cluster<T> getSourceCluster();
 
 }

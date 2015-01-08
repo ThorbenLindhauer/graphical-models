@@ -21,40 +21,40 @@ import com.github.thorbenlindhauer.cluster.ClusterGraph;
 import com.github.thorbenlindhauer.cluster.Edge;
 import com.github.thorbenlindhauer.cluster.messagepassing.Message;
 import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingContext;
-import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.Factor;
 
 /**
  * @author Thorben
  *
  */
-public class RoundRobinCalibrationContext implements ClusterGraphCalibrationContext {
+public class RoundRobinCalibrationContext<T extends Factor<T>> implements ClusterGraphCalibrationContext<T> {
 
-  protected static final double COMPARISON_PRECISION = 10e-3;
-
-  protected List<Message> messages;
-  protected Iterator<Message> messageIt;
+  protected List<Message<T>> messages;
+  protected Iterator<Message<T>> messageIt;
   protected boolean isCurrentRoundCalibrated;
-  protected MessagePassingContext messagePassingContext;
+  protected MessagePassingContext<T> messagePassingContext;
+  protected FactorEvaluator<T> factorEvaluator;
 
-  public RoundRobinCalibrationContext(ClusterGraph clusterGraph, MessagePassingContext messagePassingContext) {
-    this.messages = new ArrayList<Message>();
+  public RoundRobinCalibrationContext(ClusterGraph<T> clusterGraph, MessagePassingContext<T> messagePassingContext, FactorEvaluator<T> factorEvaluator) {
+    this.messages = new ArrayList<Message<T>>();
 
-    for (Edge edge : clusterGraph.getEdges()) {
+    for (Edge<T> edge : clusterGraph.getEdges()) {
       this.messages.add(messagePassingContext.getMessage(edge, edge.getCluster1()));
       this.messages.add(messagePassingContext.getMessage(edge, edge.getCluster2()));
     }
 
     this.messagePassingContext = messagePassingContext;
+    this.factorEvaluator = factorEvaluator;
     resetIterator();
   }
 
   /**
    * @return null when all messages are calibrated
    */
-  public Message getNextUncalibratedMessage() {
+  public Message<T> getNextUncalibratedMessage() {
     if (messageIt.hasNext()) {
-      Message nextMessage = messageIt.next();
-      Edge edge = nextMessage.getEdge();
+      Message<T> nextMessage = messageIt.next();
+      Edge<T> edge = nextMessage.getEdge();
 
       if (!isCalibrated(edge)) {
         isCurrentRoundCalibrated = false;
@@ -78,32 +78,31 @@ public class RoundRobinCalibrationContext implements ClusterGraphCalibrationCont
     isCurrentRoundCalibrated = true;
   }
 
-  protected boolean isCalibrated(Edge edge) {
-    Cluster cluster1 = edge.getCluster1();
-    Cluster cluster2 = edge.getCluster2();
-    DiscreteFactor cluster1Potential = messagePassingContext.getClusterPotential(cluster1).marginal(edge.getScope());
-    DiscreteFactor cluster2Potential = messagePassingContext.getClusterPotential(cluster2).marginal(edge.getScope());
+  protected boolean isCalibrated(Edge<T> edge) {
+    Cluster<T> cluster1 = edge.getCluster1();
+    Cluster<T> cluster2 = edge.getCluster2();
+    T cluster1Potential = messagePassingContext.getClusterPotential(cluster1).marginal(edge.getScope());
+    T cluster2Potential = messagePassingContext.getClusterPotential(cluster2).marginal(edge.getScope());
 
-    for (int i = 0; i < cluster1Potential.getVariables().getNumDistinctValues(); i++) {
-      double valueDiff = cluster1Potential.getValueAtIndex(i) - cluster2Potential.getValueAtIndex(i);
-      if (valueDiff > COMPARISON_PRECISION || valueDiff < - COMPARISON_PRECISION) {
-        return false;
-      }
-    }
-
-    return true;
+    return factorEvaluator.equalFactors(cluster1Potential, cluster2Potential);
   }
 
   @Override
-  public void notify(String eventName, Message object) {
+  public void notify(String eventName, Message<T> object) {
     // do nothing
   }
 
-  public static class RoundRobinCalibrationContextFactory implements ClusterGraphCalibrationContextFactory {
+  public static class RoundRobinCalibrationContextFactory<T extends Factor<T>>  implements ClusterGraphCalibrationContextFactory<T> {
+
+    protected FactorEvaluator<T> factorEvaluator;
+
+    public RoundRobinCalibrationContextFactory(FactorEvaluator<T> factorEvaluator) {
+      this.factorEvaluator = factorEvaluator;
+    }
 
     @Override
-    public ClusterGraphCalibrationContext buildCalibrationContext(ClusterGraph clusterGraph, MessagePassingContext messagePassingContext) {
-      return new RoundRobinCalibrationContext(clusterGraph, messagePassingContext);
+    public ClusterGraphCalibrationContext<T> buildCalibrationContext(ClusterGraph<T> clusterGraph, MessagePassingContext<T> messagePassingContext) {
+      return new RoundRobinCalibrationContext<T>(clusterGraph, messagePassingContext, factorEvaluator);
     }
 
   }

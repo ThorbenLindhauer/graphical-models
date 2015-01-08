@@ -10,33 +10,29 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.github.thorbenlindhauer.network;
+package com.github.thorbenlindhauer.factor;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Arrays;
 
-import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.variable.Scope;
 
-public class GraphicalModel<T extends Factor<T>> {
+/**
+ * @author Thorben
+ *
+ */
+public interface DefaultFactorFactory<T extends Factor<T>> {
 
-  protected Set<T> factors;
-  protected Scope scope;
+  T build(Scope scope);
 
-  public GraphicalModel(Scope scope, Set<T> factors) {
-    this.factors = factors;
-    this.scope = scope;
-  }
+  public static class DefaultDiscreteFactorFactory implements DefaultFactorFactory<DiscreteFactor> {
 
-  public Set<T> getFactors() {
-    return new HashSet<T>(factors);
-  }
+    @Override
+    public DiscreteFactor build(Scope scope) {
+      double[] values = new double[scope.getNumDistinctValues()];
+      Arrays.fill(values, 1);
+      DiscreteFactor constantFactor = new TableBasedDiscreteFactor(scope, values);
+      return constantFactor;
+    }
 
-  public Scope getScope() {
-    return scope;
-  }
-
-  public static ScopeBuilder create() {
-    return new ScopeBuilderImpl();
   }
 }

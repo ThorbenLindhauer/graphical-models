@@ -14,12 +14,13 @@ package com.github.thorbenlindhauer.inference;
 
 import com.github.thorbenlindhauer.cluster.generation.CliqueTreeGenerator;
 import com.github.thorbenlindhauer.cluster.messagepassing.BeliefUpdateContextFactory;
+import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.network.GraphicalModel;
 
 public class GeneratedClusterGraphInferencerTest extends ExactInferencerTest {
 
   @Override
-  protected ExactInferencer getInferencer(GraphicalModel graphicalModel) {
+  protected ExactInferencer getInferencer(GraphicalModel<DiscreteFactor> graphicalModel) {
     return new GeneratedCliqueTreeInferencer(graphicalModel, new CliqueTreeGenerator(), new BeliefUpdateContextFactory());
   }
 }

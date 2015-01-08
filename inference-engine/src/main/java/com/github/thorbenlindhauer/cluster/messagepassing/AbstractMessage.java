@@ -15,6 +15,7 @@ package com.github.thorbenlindhauer.cluster.messagepassing;
 import com.github.thorbenlindhauer.cluster.Cluster;
 import com.github.thorbenlindhauer.cluster.Edge;
 import com.github.thorbenlindhauer.exception.ModelStructureException;
+import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.factor.FactorSet;
 
 /**
@@ -22,14 +23,14 @@ import com.github.thorbenlindhauer.factor.FactorSet;
  *
  * @author Thorben
  */
-public abstract class AbstractMessage implements Message {
+public abstract class AbstractMessage<T extends Factor<T>> implements Message<T> {
 
-  protected Cluster sourceCluster;
-  protected FactorSet potential;
+  protected Cluster<T> sourceCluster;
+  protected FactorSet<T> potential;
 
-  protected Edge edge;
+  protected Edge<T> edge;
 
-  public AbstractMessage(Cluster cluster, Edge edge) {
+  public AbstractMessage(Cluster<T> cluster, Edge<T> edge) {
     this.edge = edge;
     if (!edge.connects(cluster)) {
       throw new ModelStructureException("Invalid message: Cluster " + cluster + " is not involved in edge " + edge);
@@ -39,25 +40,25 @@ public abstract class AbstractMessage implements Message {
   }
 
   @Override
-  public abstract void update(MessagePassingContext messagePassingContext);
+  public abstract void update(MessagePassingContext<T> messagePassingContext);
 
   @Override
-  public FactorSet getPotential() {
+  public FactorSet<T> getPotential() {
     return potential;
   }
 
   @Override
-  public Cluster getTargetCluster() {
+  public Cluster<T> getTargetCluster() {
     return edge.getTarget(sourceCluster);
   }
 
   @Override
-  public Cluster getSourceCluster() {
+  public Cluster<T> getSourceCluster() {
     return sourceCluster;
   }
 
   @Override
-  public Edge getEdge() {
+  public Edge<T> getEdge() {
     return edge;
   }
 }

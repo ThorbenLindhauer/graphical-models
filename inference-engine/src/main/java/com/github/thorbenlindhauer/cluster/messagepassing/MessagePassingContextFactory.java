@@ -13,8 +13,9 @@
 package com.github.thorbenlindhauer.cluster.messagepassing;
 
 import com.github.thorbenlindhauer.cluster.ClusterGraph;
+import com.github.thorbenlindhauer.factor.Factor;
 
 public interface MessagePassingContextFactory {
 
-  MessagePassingContext newMessagePassingContext(ClusterGraph clusterGraph);
+  <T extends Factor<T>> MessagePassingContext<T> newMessagePassingContext(ClusterGraph<T> clusterGraph);
 }

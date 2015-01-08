@@ -32,18 +32,18 @@ public class ClusterGraphInferencer implements ExactInferencer {
 
   protected static final int MAX_ITERATIONS_PER_EDGE = 10;
 
-  protected ClusterGraph clusterGraph;
+  protected ClusterGraph<DiscreteFactor> clusterGraph;
   protected boolean messagesPropagated = false;
-  protected MessagePassingContext messagePassingContext;
-  protected ClusterGraphCalibrationContext calibrationContext;
-  protected List<MessageListener> messagePassingListeners;
+  protected MessagePassingContext<DiscreteFactor> messagePassingContext;
+  protected ClusterGraphCalibrationContext<DiscreteFactor> calibrationContext;
+  protected List<MessageListener<DiscreteFactor>> messagePassingListeners;
 
-  public ClusterGraphInferencer(ClusterGraph clusterGraph, MessagePassingContextFactory messageContextFactory, ClusterGraphCalibrationContextFactory calibrationContextFactory) {
+  public ClusterGraphInferencer(ClusterGraph<DiscreteFactor> clusterGraph, MessagePassingContextFactory messageContextFactory, ClusterGraphCalibrationContextFactory<DiscreteFactor> calibrationContextFactory) {
     this.clusterGraph = clusterGraph;
     this.messagePassingContext = messageContextFactory.newMessagePassingContext(clusterGraph);
     this.calibrationContext = calibrationContextFactory.buildCalibrationContext(clusterGraph, messagePassingContext);
 
-    this.messagePassingListeners = new ArrayList<MessageListener>();
+    this.messagePassingListeners = new ArrayList<MessageListener<DiscreteFactor>>();
     this.messagePassingListeners.add(messagePassingContext);
     this.messagePassingListeners.add(calibrationContext);
   }
@@ -68,7 +68,7 @@ public class ClusterGraphInferencer implements ExactInferencer {
   protected DiscreteFactor getClusterFactorContainingScope(Scope scope) {
     ensureMessagesPropagated();
 
-    for (Cluster cluster : clusterGraph.getClusters()) {
+    for (Cluster<DiscreteFactor> cluster : clusterGraph.getClusters()) {
       if (cluster.getScope().contains(scope)) {
         return messagePassingContext.getClusterPotential(cluster).marginal(scope);
       }
@@ -86,7 +86,7 @@ public class ClusterGraphInferencer implements ExactInferencer {
 
   protected void propagateMessages() {
     int currentIteration = 0;
-    Message nextMessage = calibrationContext.getNextUncalibratedMessage();
+    Message<DiscreteFactor> nextMessage = calibrationContext.getNextUncalibratedMessage();
 
     // TODO: write log if calibration ends due to max iterations reached
     while (nextMessage != null && currentIteration < MAX_ITERATIONS_PER_EDGE * clusterGraph.getEdges().size()) {
@@ -100,13 +100,13 @@ public class ClusterGraphInferencer implements ExactInferencer {
     messagesPropagated = true;
   }
 
-  protected void notifyListeners(String event, Message nextMessage) {
-    for (MessageListener listener : messagePassingListeners) {
+  protected void notifyListeners(String event, Message<DiscreteFactor> nextMessage) {
+    for (MessageListener<DiscreteFactor> listener : messagePassingListeners) {
       listener.notify(event, nextMessage);
     }
   }
 
-  public void addMessageListener(MessageListener messageListener) {
+  public void addMessageListener(MessageListener<DiscreteFactor> messageListener) {
     this.messagePassingListeners.add(messageListener);
   }
 }

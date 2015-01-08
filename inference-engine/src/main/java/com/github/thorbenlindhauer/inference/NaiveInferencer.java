@@ -24,10 +24,10 @@ import com.github.thorbenlindhauer.variable.Scope;
  */
 public class NaiveInferencer implements ExactInferencer {
 
-  protected GraphicalModel model;
+  protected GraphicalModel<DiscreteFactor> model;
   protected DiscreteFactor jointDistribution;
 
-  public NaiveInferencer(GraphicalModel model) {
+  public NaiveInferencer(GraphicalModel<DiscreteFactor> model) {
     this.model = model;
   }
 

@@ -12,9 +12,11 @@
 */
 package com.github.thorbenlindhauer.graph.operation;
 
+import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.factorgraph.FactorGraph;
 
-public interface FactorGraphOperation<T> {
+public interface FactorGraphOperation<T, S extends Factor<S>> {
 
-  public T execute(FactorGraph factorGraph);
+  public T execute(FactorGraph<S> factorGraph);
+
 }

@@ -20,21 +20,22 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.network.GraphicalModel;
 
 public class MinFillEliminationStrategyTest {
 
   protected MinFillEliminationStrategy eliminationStrategy;
-  
+
   @Before
   public void setUp() {
     eliminationStrategy = new MinFillEliminationStrategy();
   }
-  
+
   @Test
   public void testThreeVariables() {
     // model: C <- A -> B
-    GraphicalModel model = GraphicalModel.create()
+    GraphicalModel<DiscreteFactor> model = GraphicalModel.create()
     .variable("A", 2).variable("B", 2).variable("C", 2).done()
     .factor()
       .scope("A")
@@ -49,22 +50,22 @@ public class MinFillEliminationStrategyTest {
         0.2
       })
     .build();
-    
+
     // A should come last since eliminating it in the first step introduces a fill edge
     List<String> eliminationOrder = eliminationStrategy.getEliminationOrder(model, Arrays.asList("A", "B"));
     assertThat(eliminationOrder).isEqualTo(Arrays.asList("B", "A"));
-    
+
     eliminationOrder = eliminationStrategy.getEliminationOrder(model, Arrays.asList("C", "A"));
     assertThat(eliminationOrder).isEqualTo(Arrays.asList("C", "A"));
   }
-  
+
   @Test
   public void testFiveVariables() {
     // model: D -> A -> B
     //        | \  |
     //        v  \ v
     //        E -> C
-    GraphicalModel model = GraphicalModel.create()
+    GraphicalModel<DiscreteFactor> model = GraphicalModel.create()
     .variable("A", 1).variable("B", 1).variable("C", 1).variable("D", 1).variable("E", 1).done()
     .factor()
       .scope("D")
@@ -88,26 +89,26 @@ public class MinFillEliminationStrategyTest {
       .scope("D", "C")
       .basedOnTable(new double[] {1})
     .build();
-    
+
     // in this model, the order B, A, D is the only one that does not introduce any fill edges
     List<String> eliminationOrder = eliminationStrategy.getEliminationOrder(model, Arrays.asList("D", "A", "B"));
     assertThat(eliminationOrder).isEqualTo(Arrays.asList("B", "A", "D"));
-    
+
     // eliminate E and D
     eliminationOrder = eliminationStrategy.getEliminationOrder(model, Arrays.asList("D", "E"));
     assertThat(eliminationOrder).isEqualTo(Arrays.asList("E", "D"));
-    
+
     // eliminate E and A
     eliminationOrder = eliminationStrategy.getEliminationOrder(model, Arrays.asList("E", "A"));
     assertThat(eliminationOrder).isEqualTo(Arrays.asList("E", "A"));
-    
+
     // eliminate C and A
     eliminationOrder = eliminationStrategy.getEliminationOrder(model, Arrays.asList("A", "C"));
     assertThat(eliminationOrder).isEqualTo(Arrays.asList("C", "A"));
-    
+
     // eliminate A, B, C
     eliminationOrder = eliminationStrategy.getEliminationOrder(model, Arrays.asList("A", "B", "C"));
     assertThat(eliminationOrder).isEqualTo(Arrays.asList("B", "A", "C"));
-    
+
   }
 }

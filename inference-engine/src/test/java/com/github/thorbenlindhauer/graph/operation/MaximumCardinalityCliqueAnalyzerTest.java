@@ -32,22 +32,23 @@ import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.Scope;
 
 public class MaximumCardinalityCliqueAnalyzerTest {
-  
-  protected FactorGraph factorGraph;
+
+  protected FactorGraph<DiscreteFactor> factorGraph;
   protected Set<DiscreteFactor> factors;
-  
+
   @Before
+  @SuppressWarnings("unchecked")
   public void setUp() {
-    Set<FactorGraphNode> nodes = new HashSet<FactorGraphNode>();
-    FactorGraphNode cNode = new FactorGraphNode(new DiscreteVariable("C", 1));  // cardinality does not matter
-    FactorGraphNode dNode = new FactorGraphNode(new DiscreteVariable("D", 1));
-    FactorGraphNode iNode = new FactorGraphNode(new DiscreteVariable("I", 1));
-    FactorGraphNode gNode = new FactorGraphNode(new DiscreteVariable("G", 1));
-    FactorGraphNode sNode = new FactorGraphNode(new DiscreteVariable("S", 1));
-    FactorGraphNode lNode = new FactorGraphNode(new DiscreteVariable("L", 1));
-    FactorGraphNode jNode = new FactorGraphNode(new DiscreteVariable("J", 1));
-    FactorGraphNode hNode = new FactorGraphNode(new DiscreteVariable("H", 1));
-    
+    Set<FactorGraphNode<DiscreteFactor>> nodes = new HashSet<FactorGraphNode<DiscreteFactor>>();
+    FactorGraphNode<DiscreteFactor> cNode = new FactorGraphNode<DiscreteFactor>(new DiscreteVariable("C", 1));  // cardinality does not matter
+    FactorGraphNode<DiscreteFactor> dNode = new FactorGraphNode<DiscreteFactor>(new DiscreteVariable("D", 1));
+    FactorGraphNode<DiscreteFactor> iNode = new FactorGraphNode<DiscreteFactor>(new DiscreteVariable("I", 1));
+    FactorGraphNode<DiscreteFactor> gNode = new FactorGraphNode<DiscreteFactor>(new DiscreteVariable("G", 1));
+    FactorGraphNode<DiscreteFactor> sNode = new FactorGraphNode<DiscreteFactor>(new DiscreteVariable("S", 1));
+    FactorGraphNode<DiscreteFactor> lNode = new FactorGraphNode<DiscreteFactor>(new DiscreteVariable("L", 1));
+    FactorGraphNode<DiscreteFactor> jNode = new FactorGraphNode<DiscreteFactor>(new DiscreteVariable("J", 1));
+    FactorGraphNode<DiscreteFactor> hNode = new FactorGraphNode<DiscreteFactor>(new DiscreteVariable("H", 1));
+
     factors = new HashSet<DiscreteFactor>();
     factors.add(newFactor(new String[]{"C"}, cNode));
     factors.add(newFactor(new String[]{"C", "D"}, cNode, dNode));
@@ -57,7 +58,7 @@ public class MaximumCardinalityCliqueAnalyzerTest {
     factors.add(newFactor(new String[]{"G", "H"}, gNode, hNode));
     factors.add(newFactor(new String[]{"G", "L", "S"}, gNode, lNode, sNode));
     factors.add(newFactor(new String[]{"J", "L", "S"}, jNode, lNode, sNode));
-    
+
     nodes.add(cNode);
     nodes.add(dNode);
     nodes.add(iNode);
@@ -66,8 +67,8 @@ public class MaximumCardinalityCliqueAnalyzerTest {
     nodes.add(lNode);
     nodes.add(jNode);
     nodes.add(hNode);
-    
-    Set<FactorGraphEdge> edges = new HashSet<FactorGraphEdge>();
+
+    Set<FactorGraphEdge<DiscreteFactor>> edges = new HashSet<FactorGraphEdge<DiscreteFactor>>();
     edges.add(cNode.connectTo(dNode));
     edges.add(dNode.connectTo(iNode));
     edges.add(dNode.connectTo(gNode));
@@ -79,32 +80,32 @@ public class MaximumCardinalityCliqueAnalyzerTest {
     edges.add(sNode.connectTo(lNode));
     edges.add(sNode.connectTo(jNode));
     edges.add(lNode.connectTo(jNode));
-    
-    factorGraph = new FactorGraph(nodes, edges);
+
+    factorGraph = new FactorGraph<DiscreteFactor>(nodes, edges);
   }
 
-  protected DiscreteFactor newFactor(String[] variableIds, FactorGraphNode... nodes) {
+  protected DiscreteFactor newFactor(String[] variableIds, FactorGraphNode<DiscreteFactor>... nodes) {
     Set<DiscreteVariable> variables = new HashSet<DiscreteVariable>();
-    
+
     for(String variableId : variableIds) {
       variables.add(new DiscreteVariable(variableId, 1));
     }
-    
+
     Scope scope = new Scope(variables);
     TableBasedDiscreteFactor factor = new TableBasedDiscreteFactor(scope, new double[]{0});
-    
-    for (FactorGraphNode node : nodes) {
+
+    for (FactorGraphNode<DiscreteFactor> node : nodes) {
       node.addFactor(factor);
     }
-    
+
     return factor;
   }
 
   @Test
   public void testCliqueCreation() {
-    MaximumCardinalityCliqueOperation cliqueTreeAnalyzer = new MaximumCardinalityCliqueOperation();
-    Set<Cluster> clusters = cliqueTreeAnalyzer.execute(factorGraph);
-    
+    MaximumCardinalityCliqueOperation<DiscreteFactor> cliqueTreeAnalyzer = new MaximumCardinalityCliqueOperation<DiscreteFactor>();
+    Set<Cluster<DiscreteFactor>> clusters = cliqueTreeAnalyzer.execute(factorGraph);
+
     assertThat(clusters).hasSize(6);
     assertThat(clusters).areExactly(1, new ClusterScopeCondition(new String[] {"C", "D"}));
     assertThat(clusters).areExactly(1, new ClusterScopeCondition(new String[] {"D", "I", "G"}));
@@ -113,15 +114,15 @@ public class MaximumCardinalityCliqueAnalyzerTest {
     assertThat(clusters).areExactly(1, new ClusterScopeCondition(new String[] {"J", "L", "S"}));
     assertThat(clusters).areExactly(1, new ClusterScopeCondition(new String[] {"G", "H"}));
   }
-  
+
   @Test
   public void testClusterAssignmentFamilyPreservation() {
-    MaximumCardinalityCliqueOperation cliqueTreeAnalyzer = new MaximumCardinalityCliqueOperation();
-    Set<Cluster> clusters = cliqueTreeAnalyzer.execute(factorGraph);
-    
+    MaximumCardinalityCliqueOperation<DiscreteFactor> cliqueTreeAnalyzer = new MaximumCardinalityCliqueOperation<DiscreteFactor>();
+    Set<Cluster<DiscreteFactor>> clusters = cliqueTreeAnalyzer.execute(factorGraph);
+
     for (DiscreteFactor factor : factors) {
-      assertThat(clusters).areExactly(1, new ClusterFactorCondition(factor));
+      assertThat(clusters).areExactly(1, new ClusterFactorCondition<DiscreteFactor>(factor));
     }
-    
+
   }
 }

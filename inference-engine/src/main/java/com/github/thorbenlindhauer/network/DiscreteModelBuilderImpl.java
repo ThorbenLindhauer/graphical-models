@@ -18,27 +18,27 @@ import java.util.Set;
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.variable.Scope;
 
-public class ModelBuilderImpl implements ModelBuilder {
+public class DiscreteModelBuilderImpl implements DiscreteModelBuilder {
 
   protected Set<DiscreteFactor> factors;
   protected Scope scope;
 
-  public ModelBuilderImpl(Scope scope) {
+  public DiscreteModelBuilderImpl(Scope scope) {
     this.factors = new HashSet<DiscreteFactor>();
     this.scope = scope;
   }
 
-  public FactorBuilder<ModelBuilder> factor() {
-    return new FactorBuilderImpl(this, scope);
+  public DiscreteFactorBuilder<DiscreteModelBuilder> factor() {
+    return new DiscreteFactorBuilderImpl(this, scope);
   }
 
   public void addFactor(DiscreteFactor factor) {
     factors.add(factor);
   }
 
-  public GraphicalModel build() {
+  public GraphicalModel<DiscreteFactor> build() {
     // TODO: validate model here
-    GraphicalModel model = new GraphicalModel(scope, factors);
+    GraphicalModel<DiscreteFactor> model = new GraphicalModel<DiscreteFactor>(scope, factors);
     return model;
   }
 }

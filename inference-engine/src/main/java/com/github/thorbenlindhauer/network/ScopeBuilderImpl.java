@@ -32,9 +32,9 @@ public class ScopeBuilderImpl implements ScopeBuilder {
     return this;
   }
   
-  public ModelBuilder done() {
+  public DiscreteModelBuilder done() {
     Scope scope = new Scope(variables.values());
-    return new ModelBuilderImpl(scope);
+    return new DiscreteModelBuilderImpl(scope);
   }
   
   

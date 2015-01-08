@@ -17,15 +17,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.network.GraphicalModel;
 import com.github.thorbenlindhauer.test.util.TestConstants;
 
 public abstract class ExactInferencerTest {
 
-  protected GraphicalModel bayesianNetwork;
-  protected GraphicalModel markovNetwork;
+  protected GraphicalModel<DiscreteFactor> bayesianNetwork;
+  protected GraphicalModel<DiscreteFactor> markovNetwork;
 
-  protected abstract ExactInferencer getInferencer(GraphicalModel model);
+  protected abstract ExactInferencer getInferencer(GraphicalModel<DiscreteFactor> model);
 
   /**
    * Creates a model like A -> C <- B, where there is a CPD P(C | A, B)

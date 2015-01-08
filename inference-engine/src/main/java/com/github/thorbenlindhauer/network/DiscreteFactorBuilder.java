@@ -10,15 +10,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.github.thorbenlindhauer.cluster.messagepassing;
+package com.github.thorbenlindhauer.network;
 
-import com.github.thorbenlindhauer.cluster.ClusterGraph;
-import com.github.thorbenlindhauer.factor.Factor;
+public interface DiscreteFactorBuilder<T> {
 
-public class BeliefUpdateContextFactory implements MessagePassingContextFactory {
+  DiscreteFactorBuilder<T> scope(String... variableIds);
 
-  @Override
-  public <T extends Factor<T>> MessagePassingContext<T> newMessagePassingContext(ClusterGraph<T> clusterGraph) {
-    return new BeliefUpdateContext<T>(clusterGraph);
-  }
+  T basedOnTable(double[] table);
 }

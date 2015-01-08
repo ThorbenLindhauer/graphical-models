@@ -15,19 +15,21 @@ package com.github.thorbenlindhauer.inference;
 import com.github.thorbenlindhauer.cluster.ClusterGraph;
 import com.github.thorbenlindhauer.cluster.generation.BetheClusterGraphGenerator;
 import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingContextFactory;
+import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.DefaultFactorFactory.DefaultDiscreteFactorFactory;
 import com.github.thorbenlindhauer.inference.loopy.ClusterGraphCalibrationContextFactory;
 import com.github.thorbenlindhauer.network.GraphicalModel;
 
 public abstract class LoopyBeliefPropagationInferencerTest extends ExactInferencerTest {
 
   @Override
-  protected ExactInferencer getInferencer(GraphicalModel graphicalModel) {
-    ClusterGraph clusterGraph = new BetheClusterGraphGenerator().generateClusterGraph(graphicalModel);
+  protected ExactInferencer getInferencer(GraphicalModel<DiscreteFactor> graphicalModel) {
+    ClusterGraph<DiscreteFactor> clusterGraph = new BetheClusterGraphGenerator().generateClusterGraph(graphicalModel, new DefaultDiscreteFactorFactory());
     return new ClusterGraphInferencer(clusterGraph, getMessagePassingContextFactory(), getCalibrationContextFactory());
   }
 
   protected abstract MessagePassingContextFactory getMessagePassingContextFactory();
 
-  protected abstract ClusterGraphCalibrationContextFactory getCalibrationContextFactory();
+  protected abstract ClusterGraphCalibrationContextFactory<DiscreteFactor> getCalibrationContextFactory();
 
 }

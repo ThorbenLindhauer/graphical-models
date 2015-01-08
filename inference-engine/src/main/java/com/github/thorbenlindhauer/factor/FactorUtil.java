@@ -16,17 +16,17 @@ import java.util.Set;
 
 public class FactorUtil {
 
-  public static DiscreteFactor jointDistribution(Set<DiscreteFactor> factors) {
-    DiscreteFactor jointDistribution = null;
-    
-    for (DiscreteFactor factor : factors) {
+  public static <T extends Factor<T>> T jointDistribution(Set<T> factors) {
+    T jointDistribution = null;
+
+    for (T factor : factors) {
       if (jointDistribution == null) {
         jointDistribution = factor;
       } else {
         jointDistribution = jointDistribution.product(factor);
       }
     }
-    
+
     return jointDistribution;
   }
 }

@@ -12,9 +12,11 @@
 */
 package com.github.thorbenlindhauer.network;
 
-public interface ModelBuilder {
+import com.github.thorbenlindhauer.factor.DiscreteFactor;
 
-  FactorBuilder<ModelBuilder> factor();
+public interface DiscreteModelBuilder {
 
-  GraphicalModel build();
+  DiscreteFactorBuilder<DiscreteModelBuilder> factor();
+
+  GraphicalModel<DiscreteFactor> build();
 }

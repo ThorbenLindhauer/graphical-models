@@ -17,6 +17,7 @@ import java.util.Set;
 
 import com.github.thorbenlindhauer.cluster.Cluster;
 import com.github.thorbenlindhauer.cluster.Edge;
+import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.factor.FactorSet;
 
 /**
@@ -24,25 +25,25 @@ import com.github.thorbenlindhauer.factor.FactorSet;
  *
  * @author Thorben
  */
-public class SumProductMessage extends AbstractMessage {
+public class SumProductMessage<T extends Factor<T>> extends AbstractMessage<T> {
 
-  public SumProductMessage(Cluster cluster, Edge edge) {
+  public SumProductMessage(Cluster<T> cluster, Edge<T> edge) {
     super(cluster, edge);
   }
 
   @Override
-  public void update(MessagePassingContext messagePassingContext) {
-    Set<Message> inMessages = new HashSet<Message>();
-    Set<Edge> inEdges = sourceCluster.getOtherEdges(edge);
+  public void update(MessagePassingContext<T> messagePassingContext) {
+    Set<Message<T>> inMessages = new HashSet<Message<T>>();
+    Set<Edge<T>> inEdges = sourceCluster.getOtherEdges(edge);
 
-    for (Edge inEdge : inEdges) {
+    for (Edge<T> inEdge : inEdges) {
       inMessages.add(messagePassingContext.getMessage(inEdge, inEdge.getTarget(sourceCluster)));
     }
 
-    FactorSet inMessagePotentials = new FactorSet();
+    FactorSet<T> inMessagePotentials = new FactorSet<T>();
 
-    for (Message inMessage : inMessages) {
-      FactorSet inMessagePotential = inMessage.getPotential();
+    for (Message<T> inMessage : inMessages) {
+      FactorSet<T> inMessagePotential = inMessage.getPotential();
       if (inMessagePotential != null) {
         inMessagePotentials.product(inMessagePotential);
       }

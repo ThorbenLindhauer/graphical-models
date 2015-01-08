@@ -12,13 +12,14 @@
 */
 package com.github.thorbenlindhauer.inference;
 
+import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.inference.variableelimination.MinFillEliminationStrategy;
 import com.github.thorbenlindhauer.network.GraphicalModel;
 
 public class VariableEliminationMinFillInferencerTest extends ExactInferencerTest {
 
   @Override
-  protected ExactInferencer getInferencer(GraphicalModel graphicalModel) {
+  protected ExactInferencer getInferencer(GraphicalModel<DiscreteFactor> graphicalModel) {
     return new VariableEliminationInferencer(graphicalModel, new MinFillEliminationStrategy());
   }
 

@@ -18,38 +18,38 @@ import java.util.Map;
 import com.github.thorbenlindhauer.cluster.Cluster;
 import com.github.thorbenlindhauer.cluster.ClusterGraph;
 import com.github.thorbenlindhauer.cluster.Edge;
-import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.factor.FactorSet;
 
-public class BeliefUpdateContext extends AbstractMessagePassingContext {
+public class BeliefUpdateContext<T extends Factor<T>> extends AbstractMessagePassingContext<T> {
 
-  protected Map<Cluster, FactorSet> clusterMessages;
+  protected Map<Cluster<T>, FactorSet<T>> clusterMessages;
 
-  public BeliefUpdateContext(ClusterGraph clusterGraph) {
+  public BeliefUpdateContext(ClusterGraph<T> clusterGraph) {
     super(clusterGraph);
     initializeClusterPotentials(clusterGraph);
   }
 
-  protected void initializeClusterPotentials(ClusterGraph clusterGraph) {
-    clusterMessages = new HashMap<Cluster, FactorSet>();
+  protected void initializeClusterPotentials(ClusterGraph<T> clusterGraph) {
+    clusterMessages = new HashMap<Cluster<T>, FactorSet<T>>();
 
-    for (Cluster cluster : clusterGraph.getClusters()) {
-      clusterMessages.put(cluster, new FactorSet());
+    for (Cluster<T> cluster : clusterGraph.getClusters()) {
+      clusterMessages.put(cluster, new FactorSet<T>());
     }
   }
 
   @Override
-  public DiscreteFactor calculateClusterPotential(Cluster cluster) {
+  public T calculateClusterPotential(Cluster<T> cluster) {
     return cluster.getResolver().project(clusterMessages.get(cluster), cluster.getScope()).toFactor();
   }
 
   @Override
-  public FactorSet getClusterMessages(Cluster cluster) {
+  public FactorSet<T> getClusterMessages(Cluster<T> cluster) {
     return clusterMessages.get(cluster);
   }
 
   @Override
-  protected Message newMessage(Cluster sourceCluster, Edge edge) {
-    return new BeliefUpdateMessage(sourceCluster, edge);
+  protected Message<T> newMessage(Cluster<T> sourceCluster, Edge<T> edge) {
+    return new BeliefUpdateMessage<T>(sourceCluster, edge);
   }
 }

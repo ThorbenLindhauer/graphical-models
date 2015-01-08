@@ -19,113 +19,113 @@ import java.util.Map;
 import java.util.Set;
 
 import com.github.thorbenlindhauer.cluster.Cluster;
-import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.factorgraph.FactorGraph;
 import com.github.thorbenlindhauer.factorgraph.FactorGraphNode;
 import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.Scope;
 
-public class MaximumCardinalityCliqueOperation implements FactorGraphOperation<Set<Cluster>> {
+public class MaximumCardinalityCliqueOperation<T extends Factor<T>> implements FactorGraphOperation<Set<Cluster<T>>, T> {
 
   @Override
-  public Set<Cluster> execute(FactorGraph factorGraph) {
+  public Set<Cluster<T>> execute(FactorGraph<T> factorGraph) {
     if (factorGraph.getNodes().isEmpty()) {
       return Collections.emptySet();
     }
-    
-    Set<FactorGraphNode> currentClique = new HashSet<FactorGraphNode>();
-    Set<Cluster> clusters = new HashSet<Cluster>();
-    MarkingContext context = new MarkingContext();
-    Set<DiscreteFactor> assignedFactors = new HashSet<DiscreteFactor>();
-    
+
+    Set<FactorGraphNode<T>> currentClique = new HashSet<FactorGraphNode<T>>();
+    Set<Cluster<T>> clusters = new HashSet<Cluster<T>>();
+    MarkingContext<T> context = new MarkingContext<T>();
+    Set<T> assignedFactors = new HashSet<T>();
+
     // initially mark random node
-    FactorGraphNode nodeToMark = factorGraph.getNodes().values().iterator().next();
+    FactorGraphNode<T> nodeToMark = factorGraph.getNodes().values().iterator().next();
 
     while (nodeToMark != null) {
       context.mark(nodeToMark);
-      
+
       boolean fullyConnectedToCurrentClique = true;
-      for (FactorGraphNode currentCliqueNode : currentClique) {
+      for (FactorGraphNode<T> currentCliqueNode : currentClique) {
         if (!currentCliqueNode.isConnectedTo(nodeToMark)) {
           fullyConnectedToCurrentClique = false;
         }
       }
-      
+
       if (fullyConnectedToCurrentClique) {
         currentClique.add(nodeToMark);
       } else {
-        Cluster cluster = clusterFromNodes(currentClique, assignedFactors);
+        Cluster<T> cluster = clusterFromNodes(currentClique, assignedFactors);
         clusters.add(cluster);
-        currentClique = new HashSet<FactorGraphNode>();
+        currentClique = new HashSet<FactorGraphNode<T>>();
         currentClique.add(nodeToMark);
-        for (FactorGraphNode neighbourNode : nodeToMark.getNeighbours()) {
+        for (FactorGraphNode<T> neighbourNode : nodeToMark.getNeighbours()) {
           if (context.isMarked(neighbourNode)) {
             currentClique.add(neighbourNode);
           }
         }
-        
+
       }
-      
+
       nodeToMark = context.getNodeWithMostMarkedNeighbours();
     }
-    
+
     if (!currentClique.isEmpty()) {
-      Cluster cluster = clusterFromNodes(currentClique, assignedFactors);
+      Cluster<T> cluster = clusterFromNodes(currentClique, assignedFactors);
       clusters.add(cluster);
     }
-    
+
     return clusters;
   }
-  
 
-  protected Cluster clusterFromNodes(Set<FactorGraphNode> currentClique, Set<DiscreteFactor> assignedFactors) {
+
+  protected Cluster<T> clusterFromNodes(Set<FactorGraphNode<T>> currentClique, Set<T> assignedFactors) {
     Set<DiscreteVariable> variables = new HashSet<DiscreteVariable>();
-    
-    for (FactorGraphNode node : currentClique) {
+
+    for (FactorGraphNode<T> node : currentClique) {
       variables.add(node.getVariable());
     }
-    
+
     Scope scope = new Scope(variables);
-    
-    Set<DiscreteFactor> factors = new HashSet<DiscreteFactor>();
-    
-    for (FactorGraphNode node : currentClique) {
-      for (DiscreteFactor factor : node.getFactors()) {
+
+    Set<T> factors = new HashSet<T>();
+
+    for (FactorGraphNode<T> node : currentClique) {
+      for (T factor : node.getFactors()) {
         if (!assignedFactors.contains(factor) && scope.contains(factor.getVariables())) {
           factors.add(factor);
           assignedFactors.add(factor);
         }
       }
     }
-    
-    return new Cluster(scope, factors);
+
+    return new Cluster<T>(scope, factors);
   }
 
 
-  protected boolean connectedToAll(FactorGraphNode node, Set<FactorGraphNode> nodes) {
-    for (FactorGraphNode otherNode : nodes) {
+  protected boolean connectedToAll(FactorGraphNode<?> node, Set<FactorGraphNode<?>> nodes) {
+    for (FactorGraphNode<?> otherNode : nodes) {
       if (!node.getEdges().containsKey(otherNode.getVariable())) {
         return false;
       }
     }
-    
+
     return true;
   }
-  
-  public static class MarkingContext {
-    protected Set<FactorGraphNode> markedNodes;
-    protected Map<FactorGraphNode, Integer> neighbourMarkings;
-    
+
+  public static class MarkingContext<T extends Factor<T>> {
+    protected Set<FactorGraphNode<T>> markedNodes;
+    protected Map<FactorGraphNode<T>, Integer> neighbourMarkings;
+
     public MarkingContext() {
-      this.markedNodes = new HashSet<FactorGraphNode>();
-      this.neighbourMarkings = new HashMap<FactorGraphNode, Integer>();
+      this.markedNodes = new HashSet<FactorGraphNode<T>>();
+      this.neighbourMarkings = new HashMap<FactorGraphNode<T>, Integer>();
     }
-    
-    public void mark(FactorGraphNode node) {
+
+    public void mark(FactorGraphNode<T> node) {
       boolean newNode = markedNodes.add(node);
       neighbourMarkings.remove(node);
       if (newNode) {
-        for (FactorGraphNode neighbour : node.getNeighbours()) {
+        for (FactorGraphNode<T> neighbour : node.getNeighbours()) {
           if (!markedNodes.contains(neighbour)) {
             if (neighbourMarkings.containsKey(neighbour)) {
               neighbourMarkings.put(neighbour, neighbourMarkings.get(neighbour) + 1);
@@ -136,25 +136,25 @@ public class MaximumCardinalityCliqueOperation implements FactorGraphOperation<S
         }
       }
     }
-    
-    public FactorGraphNode getNodeWithMostMarkedNeighbours() {
-      FactorGraphNode node = null;
+
+    public FactorGraphNode<T> getNodeWithMostMarkedNeighbours() {
+      FactorGraphNode<T> node = null;
       Integer highestMarking = 0;
-      
-      for (Map.Entry<FactorGraphNode, Integer> marking : neighbourMarkings.entrySet()) {
+
+      for (Map.Entry<FactorGraphNode<T>, Integer> marking : neighbourMarkings.entrySet()) {
         if (marking.getValue() > highestMarking) {
           node = marking.getKey();
           highestMarking = marking.getValue();
         }
       }
-      
+
       return node;
     }
-    
-    public boolean isMarked(FactorGraphNode node) {
+
+    public boolean isMarked(FactorGraphNode<T> node) {
       return markedNodes.contains(node);
     }
   }
-  
+
 
 }

@@ -16,40 +16,41 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.github.thorbenlindhauer.exception.ModelStructureException;
+import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.variable.Scope;
 
-public class ClusterGraph {
+public class ClusterGraph<T extends Factor<T>> {
 
-  protected Set<Cluster> clusters;
-  protected Set<Edge> edges;
+  protected Set<Cluster<T>> clusters;
+  protected Set<Edge<T>> edges;
   protected Scope scope;
 
-  public ClusterGraph(Set<Cluster> clusters) {
+  public ClusterGraph(Set<Cluster<T>> clusters) {
     this.clusters = clusters;
-    this.edges = new HashSet<Edge>();
+    this.edges = new HashSet<Edge<T>>();
   }
 
-  public Set<Cluster> getClusters() {
+  public Set<Cluster<T>> getClusters() {
     return clusters;
   }
 
-  public Set<Edge> getEdges() {
+  public Set<Edge<T>> getEdges() {
     return edges;
   }
 
-  public Edge connect(Cluster cluster1, Cluster cluster2) {
+  public Edge<T> connect(Cluster<T> cluster1, Cluster<T> cluster2) {
     if (!clusters.contains(cluster1) || !clusters.contains(cluster2)) {
       throw new ModelStructureException("At least one of the cluster " + cluster1 + ", "
           + cluster2 + " is not contained by this graph.");
     }
 
-    Edge newEdge = cluster1.connectTo(cluster2);
+    Edge<T> newEdge = cluster1.connectTo(cluster2);
     this.edges.add(newEdge);
     return newEdge;
   }
 
   public void initScope() {
-    for (Cluster cluster : clusters) {
+    for (Cluster<T> cluster : clusters) {
       if (scope == null) {
         scope = cluster.getScope();
       } else {

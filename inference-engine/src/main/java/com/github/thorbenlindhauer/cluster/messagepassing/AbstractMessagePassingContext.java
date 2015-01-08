@@ -20,32 +20,32 @@ import com.github.thorbenlindhauer.cluster.ClusterGraph;
 import com.github.thorbenlindhauer.cluster.Edge;
 import com.github.thorbenlindhauer.exception.InferenceException;
 import com.github.thorbenlindhauer.exception.ModelStructureException;
-import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.Factor;
 
-public abstract class AbstractMessagePassingContext implements MessagePassingContext {
+public abstract class AbstractMessagePassingContext<T extends Factor<T>> implements MessagePassingContext<T> {
 
-  protected Map<Edge, EdgeContext> messages;
+  protected Map<Edge<T>, EdgeContext<T>> messages;
 
-  protected Map<Cluster, DiscreteFactor> clusterPotentials;
+  protected Map<Cluster<T>, T> clusterPotentials;
 
-  public AbstractMessagePassingContext(ClusterGraph clusterGraph) {
-    this.messages = new HashMap<Edge, EdgeContext>();
+  public AbstractMessagePassingContext(ClusterGraph<T> clusterGraph) {
+    this.messages = new HashMap<Edge<T>, EdgeContext<T>>();
 
-    for (Edge edge : clusterGraph.getEdges()) {
-      this.messages.put(edge, new EdgeContext(edge, this));
+    for (Edge<T> edge : clusterGraph.getEdges()) {
+      this.messages.put(edge, new EdgeContext<T>(edge, this));
     }
 
-    this.clusterPotentials = new HashMap<Cluster, DiscreteFactor>();
+    this.clusterPotentials = new HashMap<Cluster<T>, T>();
   }
 
   @Override
-  public DiscreteFactor getClusterPotential(Cluster cluster) {
+  public T getClusterPotential(Cluster<T> cluster) {
     ensurePotentialInitialized(cluster);
     return clusterPotentials.get(cluster);
   }
 
-  protected void ensurePotentialInitialized(Cluster cluster) {
-    DiscreteFactor potential = clusterPotentials.get(cluster);
+  protected void ensurePotentialInitialized(Cluster<T> cluster) {
+    T potential = clusterPotentials.get(cluster);
 
     if (potential == null) {
       potential = calculateClusterPotential(cluster);
@@ -54,11 +54,11 @@ public abstract class AbstractMessagePassingContext implements MessagePassingCon
     }
   }
 
-  protected abstract DiscreteFactor calculateClusterPotential(Cluster cluster);
+  protected abstract T calculateClusterPotential(Cluster<T> cluster);
 
   @Override
-  public Message getMessage(Edge edge, Cluster sourceCluster) {
-    EdgeContext edgeContext = messages.get(edge);
+  public Message<T> getMessage(Edge<T> edge, Cluster<T> sourceCluster) {
+    EdgeContext<T> edgeContext = messages.get(edge);
 
     if (edgeContext == null) {
       throw new InferenceException("Edge " + edge + " is not known to this context");
@@ -67,16 +67,16 @@ public abstract class AbstractMessagePassingContext implements MessagePassingCon
     return edgeContext.getMessageFrom(sourceCluster);
   }
 
-  protected abstract Message newMessage(Cluster sourceCluster, Edge edge);
+  protected abstract Message<T> newMessage(Cluster<T> sourceCluster, Edge<T> edge);
 
-  protected static class EdgeContext {
-    protected Cluster cluster1;
-    protected Message message1;
+  protected static class EdgeContext<T extends Factor<T>> {
+    protected Cluster<T> cluster1;
+    protected Message<T> message1;
 
-    protected Cluster cluster2;
-    protected Message message2;
+    protected Cluster<T> cluster2;
+    protected Message<T> message2;
 
-    public EdgeContext(Edge edge, AbstractMessagePassingContext messageFactory) {
+    public EdgeContext(Edge<T> edge, AbstractMessagePassingContext<T> messageFactory) {
       this.cluster1 = edge.getCluster1();
       this.message1 = messageFactory.newMessage(cluster1, edge);
 
@@ -84,7 +84,7 @@ public abstract class AbstractMessagePassingContext implements MessagePassingCon
       this.message2 = messageFactory.newMessage(cluster2, edge);
     }
 
-    public Message getMessageFrom(Cluster cluster) {
+    public Message<T> getMessageFrom(Cluster<T> cluster) {
       if (cluster == cluster1) {
         return message1;
       } else if (cluster == cluster2) {
@@ -96,7 +96,7 @@ public abstract class AbstractMessagePassingContext implements MessagePassingCon
   }
 
   @Override
-  public void notify(String eventName, Message message) {
+  public void notify(String eventName, Message<T> message) {
     if (MessageListener.UPDATE_EVENT.equals(eventName)) {
       // invalidate cached target cluster potential
       clusterPotentials.put(message.getTargetCluster(), null);

@@ -29,12 +29,12 @@ import com.github.thorbenlindhauer.variable.Scope;
 //TODO: think about interface "IncrementalInferencer" that allows to submit observations incrementally
 public class CliqueTreeInferencer implements ExactInferencer {
 
-  protected ClusterGraph clusterGraph;
-  protected Cluster rootCluster;
+  protected ClusterGraph<DiscreteFactor> clusterGraph;
+  protected Cluster<DiscreteFactor> rootCluster;
   protected boolean messagesPropagated = false;
-  protected MessagePassingContext messagePassingContext;
+  protected MessagePassingContext<DiscreteFactor> messagePassingContext;
 
-  public CliqueTreeInferencer(ClusterGraph clusterGraph, Cluster rootCluster, MessagePassingContextFactory messageContextFactory) {
+  public CliqueTreeInferencer(ClusterGraph<DiscreteFactor> clusterGraph, Cluster<DiscreteFactor> rootCluster, MessagePassingContextFactory messageContextFactory) {
     this.clusterGraph = clusterGraph;
     this.rootCluster = rootCluster;
     this.messagePassingContext = messageContextFactory.newMessagePassingContext(clusterGraph);
@@ -60,7 +60,7 @@ public class CliqueTreeInferencer implements ExactInferencer {
   protected DiscreteFactor getClusterFactorContainingScope(Scope scope) {
     ensureMessagesPropagated();
 
-    for (Cluster cluster : clusterGraph.getClusters()) {
+    for (Cluster<DiscreteFactor> cluster : clusterGraph.getClusters()) {
       if (cluster.getScope().contains(scope)) {
         return messagePassingContext.getClusterPotential(cluster).marginal(scope);
       }
@@ -78,11 +78,11 @@ public class CliqueTreeInferencer implements ExactInferencer {
 
   protected void propagateMessages() {
     // forward pass (beginning at leaves)
-    Set<Message> initialForwardMessages = new HashSet<Message>();
-    for (Cluster cluster : clusterGraph.getClusters()) {
+    Set<Message<DiscreteFactor>> initialForwardMessages = new HashSet<Message<DiscreteFactor>>();
+    for (Cluster<DiscreteFactor> cluster : clusterGraph.getClusters()) {
       // determine the initial messages
       if (cluster != rootCluster && cluster.getEdges().size() == 1) {
-        Edge outEdge = cluster.getEdges().iterator().next();
+        Edge<DiscreteFactor> outEdge = cluster.getEdges().iterator().next();
         initialForwardMessages.add(messagePassingContext.getMessage(outEdge, cluster));
       }
     }
@@ -90,8 +90,8 @@ public class CliqueTreeInferencer implements ExactInferencer {
     executeMessagePass(initialForwardMessages, true);
 
     // backward pass (beginning at root)
-    Set<Message> initialBackwardMessages = new HashSet<Message>();
-    for (Edge rootOutEdge : rootCluster.getEdges()) {
+    Set<Message<DiscreteFactor>> initialBackwardMessages = new HashSet<Message<DiscreteFactor>>();
+    for (Edge<DiscreteFactor> rootOutEdge : rootCluster.getEdges()) {
       initialBackwardMessages.add(messagePassingContext.getMessage(rootOutEdge, rootCluster));
     }
 
@@ -100,23 +100,23 @@ public class CliqueTreeInferencer implements ExactInferencer {
     messagesPropagated = true;
   }
 
-  protected void executeMessagePass(Set<Message> initialMessages, boolean isForwardPass) {
-    Set<Edge> processedEdges = new HashSet<Edge>();
-    Set<Message> currentMessages = initialMessages;
+  protected void executeMessagePass(Set<Message<DiscreteFactor>> initialMessages, boolean isForwardPass) {
+    Set<Edge<DiscreteFactor>> processedEdges = new HashSet<Edge<DiscreteFactor>>();
+    Set<Message<DiscreteFactor>> currentMessages = initialMessages;
 
     while (!currentMessages.isEmpty()) {
-      Iterator<Message> it = currentMessages.iterator();
-      Message currentMessage = it.next();
+      Iterator<Message<DiscreteFactor>> it = currentMessages.iterator();
+      Message<DiscreteFactor> currentMessage = it.next();
       it.remove();
 
       currentMessage.update(messagePassingContext);
       processedEdges.add(currentMessage.getEdge());
 
-      Cluster targetCluster = currentMessage.getTargetCluster();
+      Cluster<DiscreteFactor> targetCluster = currentMessage.getTargetCluster();
       if (targetCluster != rootCluster) {
-        Set<Edge> targetOutEdges = targetCluster.getOtherEdges(currentMessage.getEdge());
+        Set<Edge<DiscreteFactor>> targetOutEdges = targetCluster.getOtherEdges(currentMessage.getEdge());
 
-        for (Edge targetOutEdge : targetOutEdges) {
+        for (Edge<DiscreteFactor> targetOutEdge : targetOutEdges) {
           // Only add the message for the out edge, if it has not yet been computed in this message pass.
           // If this is a forward pass (i.e. the first pass), we additionally need to check
           // whether the incoming messages are already all available (ie. the candidate out message has no more pending in messages)

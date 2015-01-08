@@ -15,23 +15,22 @@ package com.github.thorbenlindhauer.cluster.messagepassing;
 import com.github.thorbenlindhauer.cluster.Cluster;
 import com.github.thorbenlindhauer.cluster.ClusterGraph;
 import com.github.thorbenlindhauer.cluster.Edge;
-import com.github.thorbenlindhauer.exception.ModelStructureException;
-import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.factor.FactorSet;
 
-public class SumProductContext extends AbstractMessagePassingContext {
+public class SumProductContext<T extends Factor<T>> extends AbstractMessagePassingContext<T> {
 
 
-  public SumProductContext(ClusterGraph clusterGraph) {
+  public SumProductContext(ClusterGraph<T> clusterGraph) {
     super(clusterGraph);
   }
 
-  protected DiscreteFactor calculateClusterPotential(Cluster cluster) {
-    FactorSet inMessageFactors = new FactorSet();
+  protected T calculateClusterPotential(Cluster<T> cluster) {
+    FactorSet<T> inMessageFactors = new FactorSet<T>();
 
-    for (Edge edge : cluster.getEdges()) {
-      Message inMessage = getMessage(edge, edge.getTarget(cluster));
-      FactorSet messagePotential = inMessage.getPotential();
+    for (Edge<T> edge : cluster.getEdges()) {
+      Message<T> inMessage = getMessage(edge, edge.getTarget(cluster));
+      FactorSet<T> messagePotential = inMessage.getPotential();
 
       // ignore null potentials
       if (messagePotential != null) {
@@ -39,46 +38,20 @@ public class SumProductContext extends AbstractMessagePassingContext {
       }
     }
 
-    FactorSet potentialFactors = cluster.getResolver().project(inMessageFactors, cluster.getScope());
-    DiscreteFactor potential = potentialFactors.toFactor();
+    FactorSet<T> potentialFactors = cluster.getResolver().project(inMessageFactors, cluster.getScope());
+    T potential = potentialFactors.toFactor();
 
     return potential;
   }
 
-  protected static class EdgeContext {
-    protected Cluster cluster1;
-    protected Message message1;
-
-    protected Cluster cluster2;
-    protected Message message2;
-
-    public EdgeContext(Edge edge) {
-      this.cluster1 = edge.getCluster1();
-      this.message1 = new SumProductMessage(cluster1, edge);
-
-      this.cluster2 = edge.getCluster2();
-      this.message2 = new SumProductMessage(cluster2, edge);
-    }
-
-    public Message getMessageFrom(Cluster cluster) {
-      if (cluster == cluster1) {
-        return message1;
-      } else if (cluster == cluster2) {
-        return message2;
-      } else {
-        throw new ModelStructureException("");
-      }
-    }
-  }
-
   @Override
-  public FactorSet getClusterMessages(Cluster cluster) {
+  public FactorSet<T> getClusterMessages(Cluster<T> cluster) {
     throw new UnsupportedOperationException("not implemented; not required for sum product algorithm");
   }
 
   @Override
-  protected Message newMessage(Cluster sourceCluster, Edge edge) {
-    return new SumProductMessage(sourceCluster, edge);
+  protected Message<T> newMessage(Cluster<T> sourceCluster, Edge<T> edge) {
+    return new SumProductMessage<T>(sourceCluster, edge);
   }
 
 }

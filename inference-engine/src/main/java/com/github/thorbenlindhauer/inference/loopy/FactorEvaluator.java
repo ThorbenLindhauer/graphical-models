@@ -10,24 +10,17 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.github.thorbenlindhauer.factorgraph;
-
-import org.assertj.core.api.Condition;
+package com.github.thorbenlindhauer.inference.loopy;
 
 import com.github.thorbenlindhauer.factor.Factor;
 
-public class FactorGraphEdgeCondition<T extends Factor<T>> extends Condition<FactorGraphEdge<T>> {
+/**
+ * @author Thorben
+ *
+ */
+public interface FactorEvaluator<T extends Factor<T>> {
 
-  protected FactorGraphNode<T> node1;
-  protected FactorGraphNode<T> node2;
+  double quantifyDisagreement(T factor1, T factor2);
 
-  public FactorGraphEdgeCondition(FactorGraphNode<T> node1, FactorGraphNode<T> node2) {
-    this.node1 = node1;
-    this.node2 = node2;
-  }
-
-  @Override
-  public boolean matches(FactorGraphEdge<T> edge) {
-    return edge.connects(node1) && edge.connects(node2);
-  }
+  boolean equalFactors(T factor1, T factor2);
 }

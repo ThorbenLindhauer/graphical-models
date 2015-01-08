@@ -23,37 +23,40 @@ import com.github.thorbenlindhauer.cluster.Edge;
 import com.github.thorbenlindhauer.cluster.messagepassing.Message;
 import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingContext;
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.Factor;
 
 /**
  * @author Thorben
  *
  */
-public class PrioritizedCalibrationContext implements ClusterGraphCalibrationContext {
+public class PrioritizedCalibrationContext<T extends Factor<T>> implements ClusterGraphCalibrationContext<T> {
 
   protected static final double COMPARISON_PRECISION = 10e-50;
 
-  protected ClusterGraph clusterGraph;
-  protected MessagePassingContext messagePassingContext;
+  protected ClusterGraph<T> clusterGraph;
+  protected MessagePassingContext<T> messagePassingContext;
+  protected FactorEvaluator<T> factorEvaluator;
 
-  protected PriorityQueue<EdgeCalibration> edgeCalibrationQueue;
-  protected Map<Edge, EdgeCalibration> edgeCalibrationIndex;
+  protected PriorityQueue<EdgeCalibration<T>> edgeCalibrationQueue;
+  protected Map<Edge<T>, EdgeCalibration<T>> edgeCalibrationIndex;
 
-  public PrioritizedCalibrationContext(ClusterGraph clusterGraph, MessagePassingContext messagePassingContext) {
+  public PrioritizedCalibrationContext(ClusterGraph<T> clusterGraph, MessagePassingContext<T> messagePassingContext, FactorEvaluator<T> factorEvaluator) {
     this.clusterGraph = clusterGraph;
     this.messagePassingContext = messagePassingContext;
+    this.factorEvaluator = factorEvaluator;
     initEdgeCalibrationQueue();
   }
 
   protected void initEdgeCalibrationQueue() {
-    this.edgeCalibrationQueue = new PriorityQueue<EdgeCalibration>(clusterGraph.getEdges().size() * 2,
+    this.edgeCalibrationQueue = new PriorityQueue<EdgeCalibration<T>>(clusterGraph.getEdges().size() * 2,
         new EdgeCalibrationComparator());
-    this.edgeCalibrationIndex = new HashMap<Edge, EdgeCalibration>();
+    this.edgeCalibrationIndex = new HashMap<Edge<T>, EdgeCalibration<T>>();
 
-    for (Cluster cluster : clusterGraph.getClusters()) {
-      for (Edge edge : cluster.getEdges()) {
-        EdgeCalibration edgeCalibration = edgeCalibrationIndex.get(edge);
+    for (Cluster<T> cluster : clusterGraph.getClusters()) {
+      for (Edge<T> edge : cluster.getEdges()) {
+        EdgeCalibration<T> edgeCalibration = edgeCalibrationIndex.get(edge);
         if (edgeCalibration == null) {
-          edgeCalibration = new EdgeCalibration();
+          edgeCalibration = new EdgeCalibration<T>(factorEvaluator);
           edgeCalibration.edge = edge;
           edgeCalibration.messagePassingContext = messagePassingContext;
           edgeCalibrationIndex.put(edge, edgeCalibration);
@@ -65,12 +68,12 @@ public class PrioritizedCalibrationContext implements ClusterGraphCalibrationCon
   }
 
   @Override
-  public void notify(String eventName, Message message) {
-    Cluster targetCluster = message.getTargetCluster();
+  public void notify(String eventName, Message<T> message) {
+    Cluster<T> targetCluster = message.getTargetCluster();
 
     // readd those edges to the queue, for which the involved cluster potentials have changed
-    for (Edge edge : targetCluster.getEdges()) {
-      EdgeCalibration edgeCalibration = edgeCalibrationIndex.get(edge);
+    for (Edge<T> edge : targetCluster.getEdges()) {
+      EdgeCalibration<T> edgeCalibration = edgeCalibrationIndex.get(edge);
       edgeCalibration.invalidCache = true;
 
       edgeCalibrationQueue.remove(edgeCalibration);
@@ -79,8 +82,8 @@ public class PrioritizedCalibrationContext implements ClusterGraphCalibrationCon
   }
 
   @Override
-  public Message getNextUncalibratedMessage() {
-    EdgeCalibration topCalibration = edgeCalibrationQueue.peek();
+  public Message<T> getNextUncalibratedMessage() {
+    EdgeCalibration<T> topCalibration = edgeCalibrationQueue.peek();
     double clusterDisagreement = topCalibration.quantifyDisagreement();
 
     if (clusterDisagreement < COMPARISON_PRECISION && clusterDisagreement > - COMPARISON_PRECISION) {
@@ -90,28 +93,39 @@ public class PrioritizedCalibrationContext implements ClusterGraphCalibrationCon
     }
   }
 
-  public static class PrioritizedCalibrationContextFactory implements ClusterGraphCalibrationContextFactory {
+  public static class PrioritizedCalibrationContextFactory<T extends Factor<T>> implements ClusterGraphCalibrationContextFactory<T> {
+
+    protected FactorEvaluator<T> factorEvaluator;
+
+    public PrioritizedCalibrationContextFactory(FactorEvaluator<T> factorEvaluator) {
+      this.factorEvaluator = factorEvaluator;
+    }
 
     @Override
-    public ClusterGraphCalibrationContext buildCalibrationContext(ClusterGraph clusterGraph, MessagePassingContext messagePassingContext) {
-      return new PrioritizedCalibrationContext(clusterGraph, messagePassingContext);
+    public ClusterGraphCalibrationContext<T> buildCalibrationContext(ClusterGraph<T> clusterGraph, MessagePassingContext<T> messagePassingContext) {
+      return new PrioritizedCalibrationContext<T>(clusterGraph, messagePassingContext, factorEvaluator);
     }
   }
 
-  protected static class EdgeCalibration {
-    protected Edge edge;
-    protected MessagePassingContext messagePassingContext;
+  protected static class EdgeCalibration<T extends Factor<T>> {
+    protected Edge<T> edge;
+    protected MessagePassingContext<T> messagePassingContext;
 
     protected boolean invalidCache = true;
     protected double cachedDisagreement;
-    protected Cluster lastSourceCluster;
+    protected Cluster<T> lastSourceCluster;
+    protected FactorEvaluator<T> factorEvaluator;
+
+    public EdgeCalibration(FactorEvaluator<T> factorEvaluator) {
+      this.factorEvaluator = factorEvaluator;
+    }
 
     public double quantifyDisagreement() {
       if (invalidCache) {
-        DiscreteFactor c1Potential = messagePassingContext.getClusterPotential(edge.getCluster1()).marginal(edge.getScope());
-        DiscreteFactor c2Potential = messagePassingContext.getClusterPotential(edge.getCluster2()).marginal(edge.getScope());
+        T c1Potential = messagePassingContext.getClusterPotential(edge.getCluster1()).marginal(edge.getScope());
+        T c2Potential = messagePassingContext.getClusterPotential(edge.getCluster2()).marginal(edge.getScope());
 
-        cachedDisagreement = jsDivergence(c1Potential.normalize(), c2Potential.normalize());
+        cachedDisagreement = factorEvaluator.quantifyDisagreement(c1Potential.normalize(), c2Potential.normalize());
 
         invalidCache = false;
       }
@@ -124,18 +138,7 @@ public class PrioritizedCalibrationContext implements ClusterGraphCalibrationCon
       return "" + cachedDisagreement;
     }
 
-    protected double jsDivergence(DiscreteFactor distribution1, DiscreteFactor distribution2) {
-      double divergence = 0.0d;
-
-      for (int i = 0; i < distribution1.getVariables().getNumDistinctValues(); i++) {
-        divergence += 0.5d * distribution1.getValueAtIndex(i) * Math.log(distribution1.getValueAtIndex(i) / distribution2.getValueAtIndex(i));
-        divergence += 0.5d * distribution2.getValueAtIndex(i) * Math.log(distribution2.getValueAtIndex(i) / distribution1.getValueAtIndex(i));
-      }
-
-      return divergence;
-    }
-
-    public Message getMessage() {
+    public Message<T> getMessage() {
       if (lastSourceCluster == null || lastSourceCluster == edge.getCluster2()) {
         lastSourceCluster = edge.getCluster1();
       } else {
@@ -146,10 +149,10 @@ public class PrioritizedCalibrationContext implements ClusterGraphCalibrationCon
     }
   }
 
-  protected static class EdgeCalibrationComparator implements Comparator<EdgeCalibration> {
+  protected static class EdgeCalibrationComparator implements Comparator<EdgeCalibration<?>> {
 
     @Override
-    public int compare(EdgeCalibration o1, EdgeCalibration o2) {
+    public int compare(EdgeCalibration<?> o1, EdgeCalibration<?> o2) {
       if (o1 == o2) {
         return 0;
       }

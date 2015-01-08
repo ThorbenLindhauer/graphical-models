@@ -21,7 +21,8 @@ import java.util.Set;
 
 import com.github.thorbenlindhauer.cluster.Cluster;
 import com.github.thorbenlindhauer.cluster.ClusterGraph;
-import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.DefaultFactorFactory;
+import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.network.GraphicalModel;
 import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.Scope;
@@ -32,28 +33,30 @@ import com.github.thorbenlindhauer.variable.Scope;
  */
 public class BetheClusterGraphGenerator {
 
-  public ClusterGraph generateClusterGraph(GraphicalModel graphicalModel) {
-    Set<Cluster> clusters = new HashSet<Cluster>();
+  public <T extends Factor<T>> ClusterGraph<T> generateClusterGraph(GraphicalModel<T> graphicalModel, DefaultFactorFactory<T> defaultFactorFactory) {
+    Set<Cluster<T>> clusters = new HashSet<Cluster<T>>();
 
     // create a cluster for each variable
-    Map<String, Cluster> variableClusters = new HashMap<String, Cluster>();
+    Map<String, Cluster<T>> variableClusters = new HashMap<String, Cluster<T>>();
     for (DiscreteVariable variable : graphicalModel.getScope().getVariables()) {
-      Cluster variableCluster = new Cluster(new Scope(Arrays.asList(variable)));
+      Scope scope = new Scope(Arrays.asList(variable));
+      T defaultFactor = defaultFactorFactory.build(scope);
+      Cluster<T> variableCluster = new Cluster<T>(Collections.singleton(defaultFactor));
       clusters.add(variableCluster);
       variableClusters.put(variable.getId(), variableCluster);
     }
 
     // create a cluster for each factor
-    Set<Cluster> factorClusters = new HashSet<Cluster>();
-    for (DiscreteFactor factor : graphicalModel.getFactors()) {
-      Cluster factorCluster = new Cluster(Collections.singleton(factor));
+    Set<Cluster<T>> factorClusters = new HashSet<Cluster<T>>();
+    for (T factor : graphicalModel.getFactors()) {
+      Cluster<T> factorCluster = new Cluster<T>(Collections.singleton(factor));
       clusters.add(factorCluster);
       factorClusters.add(factorCluster);
     }
 
-    ClusterGraph clusterGraph = new ClusterGraph(clusters);
+    ClusterGraph<T> clusterGraph = new ClusterGraph<T>(clusters);
 
-    for (Cluster factorCluster : factorClusters) {
+    for (Cluster<T> factorCluster : factorClusters) {
       for (String variableId : factorCluster.getScope().getVariableIds()) {
         clusterGraph.connect(factorCluster, variableClusters.get(variableId));
       }

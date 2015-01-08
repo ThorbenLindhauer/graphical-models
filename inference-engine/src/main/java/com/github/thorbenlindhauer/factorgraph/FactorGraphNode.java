@@ -17,67 +17,67 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.variable.DiscreteVariable;
 
-public class FactorGraphNode {
+public class FactorGraphNode<T extends Factor<T>> {
 
   protected DiscreteVariable variable;
-  protected Map<DiscreteVariable, FactorGraphEdge> edges;
-  
+  protected Map<DiscreteVariable, FactorGraphEdge<T>> edges;
+
   /** all the factors that the variable represented by this node is involved in */
-  protected Set<DiscreteFactor> factors;
+  protected Set<T> factors;
 
   public FactorGraphNode(DiscreteVariable variable) {
     this.variable = variable;
-    this.edges = new HashMap<DiscreteVariable, FactorGraphEdge>();
-    this.factors = new HashSet<DiscreteFactor>();
+    this.edges = new HashMap<DiscreteVariable, FactorGraphEdge<T>>();
+    this.factors = new HashSet<T>();
   }
-  
-  public void addFactor(DiscreteFactor factor) {
+
+  public void addFactor(T factor) {
     this.factors.add(factor);
   }
-  
-  public Set<DiscreteFactor> getFactors() {
+
+  public Set<T> getFactors() {
     return factors;
   }
-  
+
   public DiscreteVariable getVariable() {
     return variable;
   }
-  
-  public Set<FactorGraphNode> getNeighbours() {
-    Set<FactorGraphNode> neighbours = new HashSet<FactorGraphNode>();
-    
-    for (FactorGraphEdge edge : edges.values()) {
+
+  public Set<FactorGraphNode<T>> getNeighbours() {
+    Set<FactorGraphNode<T>> neighbours = new HashSet<FactorGraphNode<T>>();
+
+    for (FactorGraphEdge<T> edge : edges.values()) {
       neighbours.add(edge.getConnectedNode(this));
     }
-    
+
     return neighbours;
   }
-  
-  public boolean isConnectedTo(FactorGraphNode other) {
+
+  public boolean isConnectedTo(FactorGraphNode<T> other) {
     return getNeighbours().contains(other);
   }
-  
+
   /**
    * Idempotent method. May be called multiple times with the same parameter, resulting in at most one edge
    */
-  public FactorGraphEdge connectTo(FactorGraphNode other) {
+  public FactorGraphEdge<T> connectTo(FactorGraphNode<T> other) {
     if (!edges.containsKey(other.variable)) {
-      FactorGraphEdge edge = new FactorGraphEdge(this, other);
-      
+      FactorGraphEdge<T> edge = new FactorGraphEdge<T>(this, other);
+
       this.edges.put(other.variable, edge);
       other.edges.put(this.variable, edge);
     }
-    
+
     return edges.get(other.variable);
   }
-  
-  public Map<DiscreteVariable, FactorGraphEdge> getEdges() {
+
+  public Map<DiscreteVariable, FactorGraphEdge<T>> getEdges() {
     return edges;
   }
-  
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
@@ -88,9 +88,9 @@ public class FactorGraphNode {
       sb.append(connectedVariable.getId());
       sb.append(", ");
     }
-    
+
     sb.append("]");
-    
+
     return sb.toString();
   }
 }

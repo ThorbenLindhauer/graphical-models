@@ -16,7 +16,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.github.thorbenlindhauer.cluster.Cluster;
-import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.factor.FactorSet;
 import com.github.thorbenlindhauer.factor.FactorUtil;
 import com.github.thorbenlindhauer.variable.Scope;
@@ -25,23 +25,23 @@ import com.github.thorbenlindhauer.variable.Scope;
  * @author Thorben
  *
  */
-public class DefaultPotentialResolver implements ClusterPotentialResolver<DiscreteFactor> {
+public class DefaultPotentialResolver<T extends Factor<T>> implements ClusterPotentialResolver<T> {
 
-  protected Cluster cluster;
+  protected Cluster<T> cluster;
 
-  public DefaultPotentialResolver(Cluster cluster) {
+  public DefaultPotentialResolver(Cluster<T> cluster) {
     this.cluster = cluster;
   }
 
   @Override
-  public FactorSet project(FactorSet additionalFactors, Scope projectionScope) {
-    Set<DiscreteFactor> factors = new HashSet<DiscreteFactor>(cluster.getFactors());
+  public FactorSet<T> project(FactorSet<T> additionalFactors, Scope projectionScope) {
+    Set<T> factors = new HashSet<T>(cluster.getFactors());
 
     if (additionalFactors != null) {
       factors.addAll(additionalFactors.getFactors());
     }
 
-    FactorSet result = new FactorSet();
+    FactorSet<T> result = new FactorSet<T>();
     result.add(FactorUtil.jointDistribution(factors).marginal(projectionScope));
     return result;
   }

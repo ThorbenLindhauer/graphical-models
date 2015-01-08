@@ -10,11 +10,32 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.github.thorbenlindhauer.network;
+package com.github.thorbenlindhauer.factor;
 
-public interface FactorBuilder<T> {
+import com.github.thorbenlindhauer.variable.Scope;
 
-  FactorBuilder<T> scope(String... variableIds);
+/**
+ * @author Thorben
+ *
+ */
+public interface Factor<T extends Factor<T>> {
 
-  T basedOnTable(double[] table);
+  T product(T other);
+
+  T division(T other);
+
+  /**
+   * @param scope variables to keep
+   * @return
+   */
+  T marginal(Scope scope);
+
+//  T observation(Scope scope, int[] values);
+
+  T normalize();
+
+  T invert();
+
+  Scope getVariables();
+
 }

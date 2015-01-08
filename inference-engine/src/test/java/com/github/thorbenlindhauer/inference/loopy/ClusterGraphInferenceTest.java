@@ -45,26 +45,26 @@ import com.github.thorbenlindhauer.variable.DiscreteVariable;
 @RunWith(Parameterized.class)
 public class ClusterGraphInferenceTest {
 
-  protected ClusterGraph clusterGraph;
+  protected ClusterGraph<DiscreteFactor> clusterGraph;
   protected DiscreteFactor fullFactor;
 
   @Parameters
   public static Iterable<Object[]> getCases() {
     return Arrays.asList(
       new Object[][] {
-        { new SumProductContextFactory(), new RoundRobinCalibrationContextFactory() },
-        { new BeliefUpdateContextFactory(), new RoundRobinCalibrationContextFactory() },
-        { new SumProductContextFactory(), new PrioritizedCalibrationContextFactory() },
-        { new BeliefUpdateContextFactory(), new PrioritizedCalibrationContextFactory() }
+        { new SumProductContextFactory(), new RoundRobinCalibrationContextFactory<DiscreteFactor>(new DiscreteFactorEvaluator()) },
+        { new BeliefUpdateContextFactory(), new RoundRobinCalibrationContextFactory<DiscreteFactor>(new DiscreteFactorEvaluator()) },
+        { new SumProductContextFactory(), new PrioritizedCalibrationContextFactory<DiscreteFactor>(new DiscreteFactorEvaluator()) },
+        { new BeliefUpdateContextFactory(), new PrioritizedCalibrationContextFactory<DiscreteFactor>(new DiscreteFactorEvaluator()) }
       }
     );
   }
 
   protected MessagePassingContextFactory messagePassingContextFactory;
-  protected ClusterGraphCalibrationContextFactory calibrationContextFactory;
+  protected ClusterGraphCalibrationContextFactory<DiscreteFactor> calibrationContextFactory;
 
   public ClusterGraphInferenceTest(MessagePassingContextFactory messagePassingContextFactory,
-      ClusterGraphCalibrationContextFactory calibrationContextFactory) {
+      ClusterGraphCalibrationContextFactory<DiscreteFactor> calibrationContextFactory) {
     this.messagePassingContextFactory = messagePassingContextFactory;
     this.calibrationContextFactory = calibrationContextFactory;
   }
@@ -79,33 +79,33 @@ public class ClusterGraphInferenceTest {
             new DiscreteVariable("C", 2),
             new DiscreteVariable("D", 2));
 
-    Set<Cluster> clusters = new HashSet<Cluster>();
+    Set<Cluster<DiscreteFactor>> clusters = new HashSet<Cluster<DiscreteFactor>>();
 
     // single variable potentials
-    Cluster aCluster = new Cluster(Sets.newLinkedHashSet(
+    Cluster<DiscreteFactor> aCluster = new Cluster<DiscreteFactor>(Sets.newLinkedHashSet(
         factorBuilder.scope("A").basedOnTable(new double[] { 0.1, 0.9 })
         ));
-    Cluster bCluster = new Cluster(Sets.newLinkedHashSet(
+    Cluster<DiscreteFactor> bCluster = new Cluster<DiscreteFactor>(Sets.newLinkedHashSet(
         factorBuilder.scope("B").basedOnTable(new double[] { 0.5, 0.5 })
         ));
-    Cluster cCluster = new Cluster(Sets.newLinkedHashSet(
+    Cluster<DiscreteFactor> cCluster = new Cluster<DiscreteFactor>(Sets.newLinkedHashSet(
         factorBuilder.scope("C").basedOnTable(new double[] { 0.5, 0.5 })
         ));
-    Cluster dCluster = new Cluster(Sets.newLinkedHashSet(
+    Cluster<DiscreteFactor> dCluster = new Cluster<DiscreteFactor>(Sets.newLinkedHashSet(
         factorBuilder.scope("D").basedOnTable(new double[] { 0.1, 0.9 })
         ));
 
     // variable pairs
-    Cluster abCluster = new Cluster(Sets.newLinkedHashSet(
+    Cluster<DiscreteFactor> abCluster = new Cluster<DiscreteFactor>(Sets.newLinkedHashSet(
         factorBuilder.scope("A", "B").basedOnTable(new double[] { 0.3, 0.7, 0.3, 0.7 })
         ));
-    Cluster bcCluster = new Cluster(Sets.newLinkedHashSet(
+    Cluster<DiscreteFactor> bcCluster = new Cluster<DiscreteFactor>(Sets.newLinkedHashSet(
         factorBuilder.scope("B", "C").basedOnTable(new double[] { 0.4, 0.6, 0.4, 0.6})
         ));
-    Cluster cdCluster = new Cluster(Sets.newLinkedHashSet(
+    Cluster<DiscreteFactor> cdCluster = new Cluster<DiscreteFactor>(Sets.newLinkedHashSet(
         factorBuilder.scope("C", "D").basedOnTable(new double[] { 0.4, 0.6, 0.4, 0.6 })
         ));
-    Cluster adCluster = new Cluster(Sets.newLinkedHashSet(
+    Cluster<DiscreteFactor> adCluster = new Cluster<DiscreteFactor>(Sets.newLinkedHashSet(
         factorBuilder.scope("A", "D").basedOnTable(new double[] { 0.1, 0.1, 0.1, 0.9})
         ));
 
@@ -118,7 +118,7 @@ public class ClusterGraphInferenceTest {
     clusters.add(cdCluster);
     clusters.add(adCluster);
 
-    clusterGraph = new ClusterGraph(clusters);
+    clusterGraph = new ClusterGraph<DiscreteFactor>(clusters);
     clusterGraph.connect(aCluster, abCluster);
     clusterGraph.connect(abCluster, bCluster);
     clusterGraph.connect(bCluster, bcCluster);
@@ -131,10 +131,10 @@ public class ClusterGraphInferenceTest {
     fullFactor = computeJointDistribution(clusterGraph);
   }
 
-  protected DiscreteFactor computeJointDistribution(ClusterGraph clusterGraph) {
+  protected DiscreteFactor computeJointDistribution(ClusterGraph<DiscreteFactor> clusterGraph) {
     DiscreteFactor fullFactor = null;
 
-    for (Cluster cluster : clusterGraph.getClusters()) {
+    for (Cluster<DiscreteFactor> cluster : clusterGraph.getClusters()) {
       for (DiscreteFactor factor : cluster.getFactors()) {
         if (fullFactor == null) {
           fullFactor = factor;

@@ -14,17 +14,18 @@ package com.github.thorbenlindhauer.inference.loopy;
 
 import com.github.thorbenlindhauer.cluster.messagepassing.Message;
 import com.github.thorbenlindhauer.cluster.messagepassing.MessageListener;
+import com.github.thorbenlindhauer.factor.Factor;
 
 /**
  * @author Thorben
  *
  */
-public class MessageLogListener implements MessageListener {
+public class MessageLogListener<T extends Factor<T>> implements MessageListener<T> {
 
   protected int messageCount;
 
   @Override
-  public void notify(String eventName, Message message) {
+  public void notify(String eventName, Message<T> message) {
     StringBuilder logBuilder = new StringBuilder();
 
     logBuilder.append("Message ");

@@ -14,12 +14,14 @@ package com.github.thorbenlindhauer.inference.loopy;
 
 import com.github.thorbenlindhauer.cluster.ClusterGraph;
 import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingContext;
+import com.github.thorbenlindhauer.factor.Factor;
 
 /**
  * @author Thorben
  *
  */
-public interface ClusterGraphCalibrationContextFactory {
+public interface ClusterGraphCalibrationContextFactory<T extends Factor<T>>  {
 
-  ClusterGraphCalibrationContext buildCalibrationContext(ClusterGraph clusterGraph, MessagePassingContext messagePassingContext);
+  ClusterGraphCalibrationContext<T> buildCalibrationContext(ClusterGraph<T> clusterGraph,
+      MessagePassingContext<T> messagePassingContext);
 }

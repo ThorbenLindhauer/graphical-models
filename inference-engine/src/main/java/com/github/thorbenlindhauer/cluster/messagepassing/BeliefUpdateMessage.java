@@ -2,6 +2,7 @@ package com.github.thorbenlindhauer.cluster.messagepassing;
 
 import com.github.thorbenlindhauer.cluster.Cluster;
 import com.github.thorbenlindhauer.cluster.Edge;
+import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.factor.FactorSet;
 
 /* Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,28 +17,28 @@ import com.github.thorbenlindhauer.factor.FactorSet;
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-public class BeliefUpdateMessage extends AbstractMessage {
+public class BeliefUpdateMessage<T extends Factor<T>> extends AbstractMessage<T> {
 
-  public BeliefUpdateMessage(Cluster cluster, Edge edge) {
+  public BeliefUpdateMessage(Cluster<T> cluster, Edge<T> edge) {
     super(cluster, edge);
   }
 
   @Override
-  public void update(MessagePassingContext messagePassingContext) {
-    Cluster targetCluster = edge.getTarget(sourceCluster);
+  public void update(MessagePassingContext<T> messagePassingContext) {
+    Cluster<T> targetCluster = edge.getTarget(sourceCluster);
 
-    FactorSet messagesForSourceCluster = messagePassingContext.getClusterMessages(sourceCluster);
-    FactorSet sourceClusterPotentialProjection =
+    FactorSet<T> messagesForSourceCluster = messagePassingContext.getClusterMessages(sourceCluster);
+    FactorSet<T> sourceClusterPotentialProjection =
         sourceCluster.getResolver().project(messagesForSourceCluster, edge.getScope());
 
-    FactorSet messagesForTargetCluster = messagePassingContext.getClusterMessages(targetCluster);
+    FactorSet<T> messagesForTargetCluster = messagePassingContext.getClusterMessages(targetCluster);
     if (potential != null) {
       messagesForTargetCluster.division(potential);
     }
 
     potential = sourceClusterPotentialProjection;
 
-    FactorSet reverseMessage = messagePassingContext.getMessage(edge, targetCluster).getPotential();
+    FactorSet<T> reverseMessage = messagePassingContext.getMessage(edge, targetCluster).getPotential();
     if (reverseMessage != null) {
       potential.division(reverseMessage);
     }

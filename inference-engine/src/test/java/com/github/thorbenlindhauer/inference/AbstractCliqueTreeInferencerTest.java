@@ -17,18 +17,20 @@ import com.github.thorbenlindhauer.cluster.ClusterGraph;
 import com.github.thorbenlindhauer.cluster.generation.BetheClusterGraphGenerator;
 import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingContextFactory;
 import com.github.thorbenlindhauer.exception.InferenceException;
+import com.github.thorbenlindhauer.factor.DefaultFactorFactory.DefaultDiscreteFactorFactory;
+import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.network.GraphicalModel;
 
 public abstract class AbstractCliqueTreeInferencerTest extends ExactInferencerTest {
 
   @Override
-  protected ExactInferencer getInferencer(GraphicalModel graphicalModel) {
-    ClusterGraph clusterGraph = buildClusterGraph(graphicalModel);
-    Cluster rootCluster = determineRootCluster(graphicalModel, clusterGraph);
+  protected ExactInferencer getInferencer(GraphicalModel<DiscreteFactor> graphicalModel) {
+    ClusterGraph<DiscreteFactor> clusterGraph = buildClusterGraph(graphicalModel);
+    Cluster<DiscreteFactor> rootCluster = determineRootCluster(graphicalModel, clusterGraph);
     return new CliqueTreeInferencer(clusterGraph, rootCluster, getMessagePassingContextFactory());
   }
 
-  protected Cluster determineRootCluster(GraphicalModel graphicalModel, ClusterGraph clusterGraph) {
+  protected Cluster<DiscreteFactor> determineRootCluster(GraphicalModel<DiscreteFactor> graphicalModel, ClusterGraph<DiscreteFactor> clusterGraph) {
     String[] rootClusterScope = null;
 
     if (graphicalModel == bayesianNetwork) {
@@ -37,7 +39,7 @@ public abstract class AbstractCliqueTreeInferencerTest extends ExactInferencerTe
       rootClusterScope = new String[]{ "B", "C" };
     }
 
-    for (Cluster factorCluster : clusterGraph.getClusters()) {
+    for (Cluster<DiscreteFactor> factorCluster : clusterGraph.getClusters()) {
       // we select the cluster representing the factor over A, B, C as the root cluster
       if (factorCluster.getScope().contains(rootClusterScope)) {
         return factorCluster;
@@ -47,10 +49,10 @@ public abstract class AbstractCliqueTreeInferencerTest extends ExactInferencerTe
     throw new InferenceException("Could not find root cluster");
   }
 
-  protected ClusterGraph buildClusterGraph(GraphicalModel graphicalModel) {
+  protected ClusterGraph<DiscreteFactor> buildClusterGraph(GraphicalModel<DiscreteFactor> graphicalModel) {
     // constructs a bethe cluster graph
     // in general, a bethe graph is not a tree but for this test case it is
-    return new BetheClusterGraphGenerator().generateClusterGraph(graphicalModel);
+    return new BetheClusterGraphGenerator().generateClusterGraph(graphicalModel, new DefaultDiscreteFactorFactory());
   }
 
 

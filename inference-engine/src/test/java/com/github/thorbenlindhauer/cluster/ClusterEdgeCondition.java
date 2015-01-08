@@ -14,18 +14,20 @@ package com.github.thorbenlindhauer.cluster;
 
 import org.assertj.core.api.Condition;
 
-public class ClusterEdgeCondition extends Condition<Edge> {
+import com.github.thorbenlindhauer.factor.Factor;
 
-  protected Cluster cluster1;
-  protected Cluster cluster2;
-  
-  public ClusterEdgeCondition(Cluster cluster1, Cluster cluster2) {
+public class ClusterEdgeCondition<T extends Factor<T>> extends Condition<Edge<T>> {
+
+  protected Cluster<T> cluster1;
+  protected Cluster<T> cluster2;
+
+  public ClusterEdgeCondition(Cluster<T> cluster1, Cluster<T> cluster2) {
     this.cluster1 = cluster1;
     this.cluster2 = cluster2;
   }
-  
+
   @Override
-  public boolean matches(Edge edge) {
+  public boolean matches(Edge<T> edge) {
     return edge.connects(cluster1) && edge.connects(cluster2);
   }
 }

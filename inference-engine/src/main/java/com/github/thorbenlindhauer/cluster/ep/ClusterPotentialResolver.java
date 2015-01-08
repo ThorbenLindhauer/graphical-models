@@ -12,7 +12,7 @@
 */
 package com.github.thorbenlindhauer.cluster.ep;
 
-import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.factor.FactorSet;
 import com.github.thorbenlindhauer.variable.Scope;
 
@@ -20,9 +20,9 @@ import com.github.thorbenlindhauer.variable.Scope;
  * @author Thorben
  *
  */
-public interface ClusterPotentialResolver<M extends DiscreteFactor> {
+public interface ClusterPotentialResolver<T extends Factor<T>> {
 
-  FactorSet project(FactorSet additionalFactors, Scope projectionScope);
+  FactorSet<T> project(FactorSet<T> additionalFactors, Scope projectionScope);
 
 
 }

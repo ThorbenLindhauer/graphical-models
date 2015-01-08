@@ -13,12 +13,13 @@
 package com.github.thorbenlindhauer.cluster.messagepassing;
 
 import com.github.thorbenlindhauer.Listener;
+import com.github.thorbenlindhauer.factor.Factor;
 
 /**
  * @author Thorben
  *
  */
-public interface MessageListener extends Listener<Message> {
+public interface MessageListener<T extends Factor<T>> extends Listener<Message<T>> {
 
   public static final String UPDATE_EVENT = "update";
 }

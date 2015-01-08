@@ -21,57 +21,57 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.Scope;
 
-public class FactorGraph {
+public class FactorGraph<T extends Factor<T>> {
 
-  protected Map<DiscreteVariable, FactorGraphNode> nodes;
-  protected Set<FactorGraphEdge> edges;
+  protected Map<DiscreteVariable, FactorGraphNode<T>> nodes;
+  protected Set<FactorGraphEdge<T>> edges;
   protected Scope scope;
-  
-  public FactorGraph(FactorGraph other) {
+
+  public FactorGraph(FactorGraph<T> other) {
     this(other.nodes.values(), other.edges);
   }
-  
-  public FactorGraph(Collection<FactorGraphNode> nodes, Collection<FactorGraphEdge> edges) {
-    this.nodes = new HashMap<DiscreteVariable, FactorGraphNode>();
-    for (FactorGraphNode node : nodes) {
+
+  public FactorGraph(Collection<FactorGraphNode<T>> nodes, Collection<FactorGraphEdge<T>> edges) {
+    this.nodes = new HashMap<DiscreteVariable, FactorGraphNode<T>>();
+    for (FactorGraphNode<T> node : nodes) {
       this.nodes.put(node.getVariable(), node);
     }
-    
-    this.edges = new HashSet<FactorGraphEdge>(edges);
+
+    this.edges = new HashSet<FactorGraphEdge<T>>(edges);
     this.scope = new Scope(this.nodes.keySet());
   }
-  
 
-  public Map<DiscreteVariable, FactorGraphNode> getNodes() {
+
+  public Map<DiscreteVariable, FactorGraphNode<T>> getNodes() {
     return nodes;
   }
-  
-  public FactorGraphNode getNode(String variableId) {
+
+  public FactorGraphNode<T> getNode(String variableId) {
     DiscreteVariable variable = scope.getVariable(variableId);
     return nodes.get(variable);
   }
 
-  public Set<FactorGraphEdge> getEdges() {
+  public Set<FactorGraphEdge<T>> getEdges() {
     return edges;
   }
-  
+
   public Scope getScope() {
     return scope;
   }
-  
-  public void connectPairwise(Set<FactorGraphNode> nodes) {
-    List<FactorGraphNode> nodesAsList = new ArrayList<FactorGraphNode>(nodes);
-    
+
+  public void connectPairwise(Set<FactorGraphNode<T>> nodes) {
+    List<FactorGraphNode<T>> nodesAsList = new ArrayList<FactorGraphNode<T>>(nodes);
+
     for (int i = 0; i < nodesAsList.size(); i++) {
-      FactorGraphNode node1 = nodesAsList.get(i);
-      
+      FactorGraphNode<T> node1 = nodesAsList.get(i);
+
       for (int j = i + 1; j < nodesAsList.size(); j++) {
-        FactorGraphNode node2 = nodesAsList.get(j);
-        FactorGraphEdge edge = node1.connectTo(node2);
+        FactorGraphNode<T> node2 = nodesAsList.get(j);
+        FactorGraphEdge<T> edge = node1.connectTo(node2);
         this.edges.add(edge);
       }
     }
@@ -80,34 +80,34 @@ public class FactorGraph {
   /**
    * Returns a moralized factor graph that represents the structure implicitly encoded in the factor scopes
    */
-  public static FactorGraph fromGraphicalModel(Set<DiscreteFactor> factors) {
-    Map<DiscreteVariable, FactorGraphNode> nodes = new HashMap<DiscreteVariable, FactorGraphNode>();
-    
-    for (DiscreteFactor factor : factors) {
+  public static <T extends Factor<T>> FactorGraph<T> fromGraphicalModel(Set<T> factors) {
+    Map<DiscreteVariable, FactorGraphNode<T>> nodes = new HashMap<DiscreteVariable, FactorGraphNode<T>>();
+
+    for (T factor : factors) {
       for (DiscreteVariable variable : factor.getVariables().getVariables()) {
-        FactorGraphNode node = nodes.get(variable);
-        
+        FactorGraphNode<T> node = nodes.get(variable);
+
         if (node == null) {
-          node = new FactorGraphNode(variable);
+          node = new FactorGraphNode<T>(variable);
           nodes.put(variable, node);
         }
-        
+
         node.addFactor(factor);
       }
     }
-    
-    FactorGraph factorGraph = new FactorGraph(nodes.values(), Collections.<FactorGraphEdge>emptySet());
-    
-    for (DiscreteFactor factor : factors) {
-      Set<FactorGraphNode> nodesForFactor = new HashSet<FactorGraphNode>();
-      
+
+    FactorGraph<T> factorGraph = new FactorGraph<T>(nodes.values(), Collections.<FactorGraphEdge<T>>emptySet());
+
+    for (T factor : factors) {
+      Set<FactorGraphNode<T>> nodesForFactor = new HashSet<FactorGraphNode<T>>();
+
       for (DiscreteVariable variable : factor.getVariables().getVariables()) {
         nodesForFactor.add(nodes.get(variable));
       }
-      
+
       factorGraph.connectPairwise(nodesForFactor);
     }
-    
+
     return factorGraph;
   }
 }

@@ -14,15 +14,15 @@ package com.github.thorbenlindhauer.cluster.messagepassing;
 
 import com.github.thorbenlindhauer.cluster.Cluster;
 import com.github.thorbenlindhauer.cluster.Edge;
-import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.factor.FactorSet;
 
-public interface MessagePassingContext extends MessageListener {
+public interface MessagePassingContext<T extends Factor<T>> extends MessageListener<T> {
 
-  Message getMessage(Edge edge, Cluster sourceCluster);
+  Message<T> getMessage(Edge<T> edge, Cluster<T> sourceCluster);
 
-  DiscreteFactor getClusterPotential(Cluster cluster);
+  T getClusterPotential(Cluster<T> cluster);
 
-  FactorSet getClusterMessages(Cluster cluster);
+  FactorSet<T> getClusterMessages(Cluster<T> cluster);
 
 }

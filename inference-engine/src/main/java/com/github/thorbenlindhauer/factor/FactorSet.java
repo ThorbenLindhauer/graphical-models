@@ -20,30 +20,30 @@ import java.util.Set;
  * @author Thorben
  *
  */
-public class FactorSet {
+public class FactorSet<T extends Factor<T>> {
 
-  protected Set<DiscreteFactor> factors;
+  protected Set<T> factors;
 
   public FactorSet(Set<DiscreteFactor> factors) {
     factors = new HashSet<DiscreteFactor>(factors);
   }
 
   public FactorSet() {
-    factors = new HashSet<DiscreteFactor>();
+    factors = new HashSet<T>();
   }
 
-  public DiscreteFactor toFactor() {
+  public T toFactor() {
     return FactorUtil.jointDistribution(factors);
   }
 
-  public void division(FactorSet other) {
-    Set<DiscreteFactor> newFactors = new HashSet<DiscreteFactor>();
-    Set<DiscreteFactor> factorsToReplace = new HashSet<DiscreteFactor>();
+  public void division(FactorSet<T> other) {
+    Set<T> newFactors = new HashSet<T>();
+    Set<T> factorsToReplace = new HashSet<T>();
 
-    for (DiscreteFactor otherFactor : other.factors) {
+    for (T otherFactor : other.factors) {
       boolean factorProcessed = false;
 
-      for (DiscreteFactor thisFactor : factors) {
+      for (T thisFactor : factors) {
         if (thisFactor.getVariables().contains(otherFactor.getVariables())) {
           factorsToReplace.add(thisFactor);
           newFactors.add(thisFactor.division(otherFactor));
@@ -62,14 +62,14 @@ public class FactorSet {
     factors.addAll(newFactors);
   }
 
-  public void product(FactorSet other) {
-    Set<DiscreteFactor> newFactors = new HashSet<DiscreteFactor>();
-    Set<DiscreteFactor> factorsToReplace = new HashSet<DiscreteFactor>();
+  public void product(FactorSet<T> other) {
+    Set<T> newFactors = new HashSet<T>();
+    Set<T> factorsToReplace = new HashSet<T>();
 
-    for (DiscreteFactor otherFactor : other.factors) {
+    for (T otherFactor : other.factors) {
       boolean factorProcessed = false;
 
-      for (DiscreteFactor thisFactor : factors) {
+      for (T thisFactor : factors) {
         if (thisFactor.getVariables().contains(otherFactor.getVariables())) {
           factorsToReplace.add(thisFactor);
           newFactors.add(thisFactor.product(otherFactor));
@@ -88,11 +88,11 @@ public class FactorSet {
     factors.addAll(newFactors);
   }
 
-  public Set<DiscreteFactor> getFactors() {
+  public Set<T> getFactors() {
     return factors;
   }
 
-  public void add(DiscreteFactor factor) {
+  public void add(T factor) {
     this.factors.add(factor);
   }
 }

@@ -27,7 +27,7 @@ import com.github.thorbenlindhauer.variable.Scope;
  * @author Thorben
  *
  */
-public class StandaloneFactorBuilder implements FactorBuilder<DiscreteFactor> {
+public class StandaloneFactorBuilder implements DiscreteFactorBuilder<DiscreteFactor> {
 
   protected Map<String, DiscreteVariable> variables;
 
@@ -38,7 +38,7 @@ public class StandaloneFactorBuilder implements FactorBuilder<DiscreteFactor> {
   }
 
   @Override
-  public FactorBuilder<DiscreteFactor> scope(String... variableIds) {
+  public DiscreteFactorBuilder<DiscreteFactor> scope(String... variableIds) {
     currentVariables = new HashSet<DiscreteVariable>();
 
     for (String variableId : variableIds) {
