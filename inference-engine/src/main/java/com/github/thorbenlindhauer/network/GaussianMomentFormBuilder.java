@@ -12,9 +12,14 @@
 */
 package com.github.thorbenlindhauer.network;
 
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 
+/**
+ * @author Thorben
+ *
+ */
+public interface GaussianMomentFormBuilder<T> {
 
-public interface DiscreteFactorBuilder<T> extends FactorBuilder<DiscreteFactorBuilder<T>> {
-
-  T basedOnTable(double[] table);
+  T parameters(RealVector meanVector, RealMatrix covarianceMatrix);
 }

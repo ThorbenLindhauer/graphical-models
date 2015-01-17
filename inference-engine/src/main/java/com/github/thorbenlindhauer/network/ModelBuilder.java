@@ -12,9 +12,11 @@
 */
 package com.github.thorbenlindhauer.network;
 
+import com.github.thorbenlindhauer.factor.Factor;
 
+public interface ModelBuilder<T extends Factor<T>, B extends FactorBuilder<B>> {
 
-public interface DiscreteFactorBuilder<T> extends FactorBuilder<DiscreteFactorBuilder<T>> {
+  B factor();
 
-  T basedOnTable(double[] table);
+  GraphicalModel<T> build();
 }

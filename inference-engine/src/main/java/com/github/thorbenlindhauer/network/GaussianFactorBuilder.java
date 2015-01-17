@@ -13,8 +13,14 @@
 package com.github.thorbenlindhauer.network;
 
 
+/**
+ * @author Thorben
+ *
+ */
+public interface GaussianFactorBuilder<T> extends FactorBuilder<GaussianFactorBuilder<T>> {
 
-public interface DiscreteFactorBuilder<T> extends FactorBuilder<DiscreteFactorBuilder<T>> {
+  GaussianMomentFormBuilder<T> momentForm();
 
-  T basedOnTable(double[] table);
+  GaussianConditionalBuilder<T> conditional();
+
 }

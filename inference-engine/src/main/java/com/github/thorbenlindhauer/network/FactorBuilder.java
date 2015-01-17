@@ -13,8 +13,11 @@
 package com.github.thorbenlindhauer.network;
 
 
+/**
+ * @author Thorben
+ *
+ */
+public interface FactorBuilder<T extends FactorBuilder<T>> {
 
-public interface DiscreteFactorBuilder<T> extends FactorBuilder<DiscreteFactorBuilder<T>> {
-
-  T basedOnTable(double[] table);
+  T scope(String... variableIds);
 }

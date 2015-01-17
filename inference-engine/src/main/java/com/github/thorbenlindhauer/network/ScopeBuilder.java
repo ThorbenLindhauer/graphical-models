@@ -12,9 +12,11 @@
 */
 package com.github.thorbenlindhauer.network;
 
+import com.github.thorbenlindhauer.factor.DiscreteFactor;
+
 public interface ScopeBuilder {
 
   ScopeBuilder variable(String id, int cardinality);
-  
-  DiscreteModelBuilder done();
+
+  ModelBuilder<DiscreteFactor, DiscreteFactorBuilder<DiscreteModelBuilder>> discreteNetwork();
 }

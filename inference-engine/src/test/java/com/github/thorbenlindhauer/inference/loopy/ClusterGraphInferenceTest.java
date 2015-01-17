@@ -34,7 +34,7 @@ import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.inference.ClusterGraphInferencer;
 import com.github.thorbenlindhauer.inference.loopy.PrioritizedCalibrationContext.PrioritizedCalibrationContextFactory;
 import com.github.thorbenlindhauer.inference.loopy.RoundRobinCalibrationContext.RoundRobinCalibrationContextFactory;
-import com.github.thorbenlindhauer.network.StandaloneFactorBuilder;
+import com.github.thorbenlindhauer.network.StandaloneDiscreteFactorBuilder;
 import com.github.thorbenlindhauer.test.util.TestConstants;
 import com.github.thorbenlindhauer.variable.DiscreteVariable;
 
@@ -72,8 +72,8 @@ public class ClusterGraphInferenceTest {
   @Before
   public void setUp() {
     // constructs a pairwise markov network over four variables
-    StandaloneFactorBuilder factorBuilder =
-        StandaloneFactorBuilder.withVariables(
+    StandaloneDiscreteFactorBuilder factorBuilder =
+        StandaloneDiscreteFactorBuilder.withVariables(
             new DiscreteVariable("A", 2),
             new DiscreteVariable("B", 2),
             new DiscreteVariable("C", 2),

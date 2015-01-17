@@ -14,9 +14,10 @@ package com.github.thorbenlindhauer.network;
 
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
 
-public interface DiscreteModelBuilder {
+/**
+ * @author Thorben
+ *
+ */
+public interface DiscreteModelBuilder extends ModelBuilder<DiscreteFactor, DiscreteFactorBuilder<DiscreteModelBuilder>> {
 
-  DiscreteFactorBuilder<DiscreteModelBuilder> factor();
-
-  GraphicalModel<DiscreteFactor> build();
 }

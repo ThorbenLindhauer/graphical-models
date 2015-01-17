@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.github.thorbenlindhauer.exception.FactorOperationException;
+import com.github.thorbenlindhauer.network.StandaloneGaussiaFactorBuilder;
 import com.github.thorbenlindhauer.test.util.TestConstants;
 import com.github.thorbenlindhauer.variable.ContinuousVariable;
 import com.github.thorbenlindhauer.variable.DiscreteVariable;
@@ -38,6 +39,8 @@ public class GaussianFactorTest {
   protected GaussianFactor abFactor;
   protected GaussianFactor acFactor;
   protected GaussianFactor abcFactor;
+
+  protected StandaloneGaussiaFactorBuilder factorBuilder;
 
   @Before
   public void setUp() {
@@ -68,11 +71,16 @@ public class GaussianFactorTest {
         },
         new double[]{3.0d, 2.0d, 1.5d},
         8.5d);
+
+    factorBuilder = StandaloneGaussiaFactorBuilder.withVariables(
+        new ContinuousVariable("A"),
+        new ContinuousVariable("B"),
+        new ContinuousVariable("C"));
   }
 
 
   @Test
-  public void testFactorInitialization() {
+  public void testInitializationFromMomentForm() {
     Scope scope = newScope(new ContinuousVariable("A"), new ContinuousVariable("B"), new ContinuousVariable("C"));
 
     RealMatrix covarianceMatrix = new Array2DRowRealMatrix(new double[][] {
@@ -84,7 +92,7 @@ public class GaussianFactorTest {
     RealVector meanVector = new ArrayRealVector(new double[] {1.0d, 4.0d, 7.0d});
 
     // when
-    GaussianFactor factor = CanonicalGaussianFactor.fromMomentForm(scope, covarianceMatrix, meanVector);
+    GaussianFactor factor = CanonicalGaussianFactor.fromMomentForm(scope, meanVector, covarianceMatrix);
 
     // then
     RealMatrix returnedCovarianceMatrix = factor.getCovarianceMatrix();
@@ -113,6 +121,69 @@ public class GaussianFactorTest {
   }
 
   @Test
+  public void testProbabilityForAssignment() {
+    GaussianFactor oneVariableFactor = factorBuilder
+        .scope("A")
+        .momentForm()
+        .parameters(
+            new ArrayRealVector(new double[]{ 3.0d }),
+            new Array2DRowRealMatrix(new double[]{ 2.0d }));
+
+    assertThat(oneVariableFactor.getValueForAssignment(new double[]{ 2.5d })).isEqualTo(0.265004, TestConstants.DOUBLE_VALUE_TOLERANCE);
+
+    GaussianFactor threeVariableFactor = factorBuilder
+        .scope("A", "B", "C")
+        .momentForm()
+        .parameters(
+            new ArrayRealVector(new double[]{ 2.0d, 3.0d, 4.0d }),
+            new Array2DRowRealMatrix(new double[][]{
+                { 1.0d, 0.4d, 0.5d},
+                { 0.4d, 1.0d, 0},
+                { 0.5d, 0, 1.0d}}));
+
+    assertThat(threeVariableFactor.getValueForAssignment(new double[]{ 1.0d, 2.0d, 4.0d })).isEqualTo(0.0369539, TestConstants.DOUBLE_VALUE_TOLERANCE);
+  }
+
+  @Test
+  public void testInitializationFromConditionalLinearGaussian() {
+    GaussianFactor factor =
+        factorBuilder
+          .scope("A", "B")
+          .conditional().conditioningScope("B")
+          .parameters(new ArrayRealVector(new double[]{ 4.0d }), // mean of A
+              new Array2DRowRealMatrix(new double[]{ 2.0d }),    // variance for A
+              new Array2DRowRealMatrix(new double[]{ 5.0d }));   // weight of B
+
+    // P(A = 3 | B = 1.5)
+    assertThat(factor.getValueForAssignment(new double[]{ 10.0d, 1.5d })).isEqualTo(0.160733d, TestConstants.DOUBLE_VALUE_TOLERANCE);
+
+  }
+
+  @Test
+  public void testConvolution() {
+    GaussianFactor factor =
+        factorBuilder
+          .scope("A", "B", "C")
+          .conditional().conditioningScope("B", "C")
+          .parameters(new ArrayRealVector(new double[]{ 0.0d }), // mean of A
+              new Array2DRowRealMatrix(new double[]{ 1.0d }),    // variance for A (allowed to be 0 in plain convolution)
+              new Array2DRowRealMatrix(new double[][]{ {1.0d, 1.0d} }));   // weight of B and C
+
+    GaussianFactor bFactor =
+        factorBuilder.scope("B").momentForm().parameters(new ArrayRealVector(new double[]{ 2.5d }), new Array2DRowRealMatrix(new double[] { 0.8d }));
+
+    GaussianFactor cFactor =
+        factorBuilder.scope("C").momentForm().parameters(new ArrayRealVector(new double[]{ 1.5d }), new Array2DRowRealMatrix(new double[] { 1.3d }));
+
+    GaussianFactor abcFactor = factor.product(bFactor).product(cFactor);
+    GaussianFactor marginalFactor = abcFactor.marginal(factor.getVariables().reduceBy("B", "C"));
+
+    assertThat(marginalFactor.getMeanVector().getEntry(0)).isEqualTo(2.5d + 1.5d, TestConstants.DOUBLE_VALUE_TOLERANCE);
+    assertThat(marginalFactor.getCovarianceMatrix().getEntry(0, 0)).isEqualTo(0.8d + 1.3d, TestConstants.DOUBLE_VALUE_TOLERANCE);
+
+  }
+
+  @Test
   public void testInvalidFactorSerialization() {
     Scope scope = newScope(new DiscreteVariable("A", 5), new ContinuousVariable("B"));
 
@@ -124,7 +195,7 @@ public class GaussianFactorTest {
     RealVector meanVector = new ArrayRealVector(new double[] {1.0d, 4.0d});
 
     try {
-      CanonicalGaussianFactor.fromMomentForm(scope, covarianceMatrix, meanVector);
+      CanonicalGaussianFactor.fromMomentForm(scope, meanVector, covarianceMatrix);
       fail("should not suceed as a gaussian factor cannot be defined over a discrete variable");
     } catch (Exception e) {
       // happy path

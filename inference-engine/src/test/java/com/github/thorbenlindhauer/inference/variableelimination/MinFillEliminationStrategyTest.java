@@ -36,7 +36,7 @@ public class MinFillEliminationStrategyTest {
   public void testThreeVariables() {
     // model: C <- A -> B
     GraphicalModel<DiscreteFactor> model = GraphicalModel.create()
-    .variable("A", 2).variable("B", 2).variable("C", 2).done()
+    .variable("A", 2).variable("B", 2).variable("C", 2).discreteNetwork()
     .factor()
       .scope("A")
       .basedOnTable(new double[] {0.1, 0.4})
@@ -66,7 +66,7 @@ public class MinFillEliminationStrategyTest {
     //        v  \ v
     //        E -> C
     GraphicalModel<DiscreteFactor> model = GraphicalModel.create()
-    .variable("A", 1).variable("B", 1).variable("C", 1).variable("D", 1).variable("E", 1).done()
+    .variable("A", 1).variable("B", 1).variable("C", 1).variable("D", 1).variable("E", 1).discreteNetwork()
     .factor()
       .scope("D")
       .basedOnTable(new double[] {1})

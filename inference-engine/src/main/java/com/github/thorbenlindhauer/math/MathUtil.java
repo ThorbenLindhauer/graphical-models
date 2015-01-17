@@ -12,8 +12,11 @@
 */
 package com.github.thorbenlindhauer.math;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.DecompositionSolver;
+import org.apache.commons.math3.linear.DefaultRealMatrixPreservingVisitor;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -68,5 +71,25 @@ public class MathUtil {
     ensureLUDecompositionInitialized();
 
     return luDecomposition.getDeterminant();
+  }
+
+  protected double DOUBLE_COMPARISON_OFFSET = 10e-10;
+
+  public boolean isZeroMatrix() {
+
+    final AtomicBoolean isZeroMatrix = new AtomicBoolean(true);
+
+    // TODO: optimize to stop after first non-zero entry
+    matrix.walkInOptimizedOrder(new DefaultRealMatrixPreservingVisitor() {
+
+      @Override
+      public void visit(int row, int column, double value) {
+        if (value > DOUBLE_COMPARISON_OFFSET || value < - DOUBLE_COMPARISON_OFFSET) {
+          isZeroMatrix.set(false);
+        }
+      }
+    });
+
+    return isZeroMatrix.get();
   }
 }

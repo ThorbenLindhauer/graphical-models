@@ -47,19 +47,6 @@ public class CanonicalGaussianFactor implements GaussianFactor {
     this.normalizationConstant = normalizationConstant;
   }
 
-  public static CanonicalGaussianFactor fromMomentForm(Scope scope, RealMatrix covarianceMatrix, RealVector meanVector) {
-    // TODO: validate scope and dimensions of matrix and vector
-
-    MathUtil mathUtil = new MathUtil(covarianceMatrix);
-    RealMatrix precisionMatrix = mathUtil.invert();
-    RealVector scaledMeanVector = precisionMatrix.operate(meanVector);
-    int dimension = meanVector.getDimension();
-    double normalizationConstant = - (0.5d * scaledMeanVector.dotProduct(meanVector)) -
-        (Math.log(Math.pow(2.0d * Math.PI, (double) dimension / 2.0d) * Math.sqrt(mathUtil.determinant())));
-
-    return new CanonicalGaussianFactor(scope, precisionMatrix, scaledMeanVector, normalizationConstant);
-  }
-
   @Override
   public GaussianFactor product(GaussianFactor other) {
     Scope newScope = scope.union(other.getVariables());
@@ -98,7 +85,7 @@ public class CanonicalGaussianFactor implements GaussianFactor {
    * mapping must have the size of the new vector; maps a vector to a new size by applying the mapping of the positions
    * and fills the remaining places with 0 values
    */
-  protected RealVector padVector(final RealVector vector, int newSize, final int[] mapping) {
+  protected static RealVector padVector(final RealVector vector, int newSize, final int[] mapping) {
     final RealVector newVector = new ArrayRealVector(newSize);
 
     newVector.walkInOptimizedOrder(new RealVectorChangingVisitor() {
@@ -225,26 +212,162 @@ public class CanonicalGaussianFactor implements GaussianFactor {
     return scope;
   }
 
+  @Override
   public RealMatrix getPrecisionMatrix() {
     return precisionMatrix;
   }
 
+  @Override
   public RealVector getScaledMeanVector() {
     return scaledMeanVector;
   }
 
+  @Override
   public double getNormalizationConstant() {
     return normalizationConstant;
   }
 
+  @Override
   public RealMatrix getCovarianceMatrix() {
     MathUtil mathUtil = new MathUtil(precisionMatrix);
     return mathUtil.invert();
   }
 
+  @Override
   public RealVector getMeanVector() {
     MathUtil mathUtil = new MathUtil(precisionMatrix);
     return mathUtil.invert().operate(scaledMeanVector);
+  }
+
+  @Override
+  public double getValueForAssignment(double[] assignment) {
+    RealVector assignmentVector = new ArrayRealVector(assignment);
+
+    double exponent = - 0.5d * assignmentVector.dotProduct(precisionMatrix.operate(assignmentVector))
+        + scaledMeanVector.dotProduct(assignmentVector) + normalizationConstant;
+
+    return Math.exp(exponent);
+  }
+
+  public static CanonicalGaussianFactor fromMomentForm(Scope scope, RealVector meanVector, RealMatrix covarianceMatrix) {
+
+    // TODO: perform cardinality checks etc.
+
+    MathUtil mathUtil = new MathUtil(covarianceMatrix);
+    RealMatrix precisionMatrix = mathUtil.invert();
+    RealVector scaledMeanVector = precisionMatrix.operate(meanVector);
+    int dimension = meanVector.getDimension();
+    double normalizationConstant = - (0.5d * scaledMeanVector.dotProduct(meanVector)) -
+        (Math.log(Math.pow(2.0d * Math.PI, (double) dimension / 2.0d) * Math.sqrt(mathUtil.determinant())));
+
+    return new CanonicalGaussianFactor(scope, precisionMatrix, scaledMeanVector, normalizationConstant);
+  }
+
+  /**
+   * Transforms a conditional linear gaussian (i.e. a Gaussian of the form N(x; a + B^T * Y, C) into canonical form.
+   *
+   * @param meanVector a
+   * @param weightMatrix B
+   * @param covarianceMatrix C
+   */
+  public static CanonicalGaussianFactor fromConditionalForm(Scope scope, Scope conditioningScope, RealVector meanVector,
+    RealMatrix covarianceMatrix, RealMatrix weightMatrix) {
+
+ // TODO: perform cardinality checks etc.
+
+    // the following assumes that the resulting precision matrix (and mean vector) can be restructured as follows:
+    // ( SUBMATRIX_XX SUBMATRIX_XY )
+    // ( SUBMATRIX_YX SUBMATRIX_YY )
+    // where X indicates variables that are part of the prediction scope and Y are variables being part of the conditioning scope
+
+    // assuming
+    //   meanVector: a
+    //   covarianceMatrix: C
+    //   weightMatrix: B
+
+
+    // XX = C^-1
+    // XY = -C^-1 * B
+    // YX = -B^T * C^-1
+    // YY = B^T * C^-1 * B^T
+
+    MathUtil mathUtil = new MathUtil(covarianceMatrix);
+
+    // C^(-1)
+    RealMatrix xxMatrix = null;
+
+    xxMatrix = mathUtil.invert();
+
+//    if (!mathUtil.isZeroMatrix()) {
+//      xxMatrix = mathUtil.invert();
+//    } else {
+//
+//      // this is a special case for convolution in which the "summing" variable has no variance itself
+//      // although a 0 variance is not valid in general
+//      xxMatrix = covarianceMatrix;
+//    }
+
+    // B^T * C^(-1)
+    RealMatrix weightedXXMatrix = weightMatrix.transpose().multiply(xxMatrix);
+
+    // -B^T * C^(-1)
+    RealMatrix yxMatrix = weightedXXMatrix.scalarMultiply(-1.0d);
+
+    // -C^(-1)^T * B
+    RealMatrix xyMatrix = xxMatrix.transpose().multiply(weightMatrix).scalarMultiply(-1.0d);
+
+    // B^T * C^(-1) * B
+    RealMatrix yyMatrix = weightedXXMatrix.multiply(weightMatrix);
+
+    // K
+    RealMatrix conditionedPrecisionMatrix = new Array2DRowRealMatrix(scope.size(), scope.size());
+
+    // Matrix to generate h
+    RealMatrix conditionedMeanTransformationMatrix = new Array2DRowRealMatrix(scope.size(), scope.size());
+
+    Scope predictionScope = scope.reduceBy(conditioningScope);
+    int[] predictionMapping = scope.createContinuousVariableMapping(predictionScope);
+    int[] conditioningMapping = scope.createContinuousVariableMapping(conditioningScope);
+
+    for (int i = 0; i < scope.size(); i++) {
+      RealVector precisionColumn = conditionedPrecisionMatrix.getColumnVector(i);
+
+      if (predictionMapping[i] >= 0) {
+        precisionColumn = precisionColumn.add(padVector(xxMatrix.getColumnVector(predictionMapping[i]), scope.size(), predictionMapping));
+
+        conditionedMeanTransformationMatrix.setColumnVector(i, precisionColumn);
+
+        precisionColumn = precisionColumn.add(padVector(yxMatrix.getColumnVector(predictionMapping[i]), scope.size(), conditioningMapping));
+
+        conditionedPrecisionMatrix.setColumnVector(i, precisionColumn);
+      }
+
+      if (conditioningMapping[i] >= 0) {
+        precisionColumn = precisionColumn.add(padVector(xyMatrix.getColumnVector(conditioningMapping[i]), scope.size(), predictionMapping));
+
+        conditionedMeanTransformationMatrix.setColumnVector(i, precisionColumn);
+
+        precisionColumn = precisionColumn.add(padVector(yyMatrix.getColumnVector(conditioningMapping[i]), scope.size(), conditioningMapping));
+
+        conditionedPrecisionMatrix.setColumnVector(i, precisionColumn);
+      }
+    }
+
+    // h = (a, 0)^T * (XX, XY; 0, 0)
+    RealMatrix scaledMeanMatrix = new Array2DRowRealMatrix(1, scope.size());
+    scaledMeanMatrix.setRowVector(0, padVector(meanVector, scope.size(), predictionMapping));
+
+    scaledMeanMatrix = scaledMeanMatrix.multiply(conditionedMeanTransformationMatrix);
+    RealVector scaledMeanVector = scaledMeanMatrix.getRowVector(0);
+
+    // g = a^T * C^-1 * a - log((2 * PI) ^ m/2 * det(C)^0.5) where m is the size of the prediction scope
+    RealMatrix meanMatrix = new Array2DRowRealMatrix(predictionScope.size(), 1);
+    meanMatrix.setColumnVector(0, meanVector);
+    double normalizationConstant = - 0.5d * meanVector.dotProduct(xxMatrix.operate(meanVector))
+        - Math.log(Math.pow(2 * Math.PI, (double) predictionScope.size() / 2.0d) * Math.sqrt(mathUtil.determinant()));
+
+    return new CanonicalGaussianFactor(scope, conditionedPrecisionMatrix, scaledMeanVector, normalizationConstant);
+
   }
 
 }

@@ -27,13 +27,13 @@ import com.github.thorbenlindhauer.variable.Scope;
  * @author Thorben
  *
  */
-public class StandaloneFactorBuilder implements DiscreteFactorBuilder<DiscreteFactor> {
+public class StandaloneDiscreteFactorBuilder implements DiscreteFactorBuilder<DiscreteFactor> {
 
   protected Map<String, DiscreteVariable> variables;
 
   protected Set<DiscreteVariable> currentVariables;
 
-  public StandaloneFactorBuilder() {
+  public StandaloneDiscreteFactorBuilder() {
     this.variables = new HashMap<String, DiscreteVariable>();
   }
 
@@ -66,8 +66,8 @@ public class StandaloneFactorBuilder implements DiscreteFactorBuilder<DiscreteFa
     return factor;
   }
 
-  public static StandaloneFactorBuilder withVariables(DiscreteVariable... variables) {
-    StandaloneFactorBuilder builder = new StandaloneFactorBuilder();
+  public static StandaloneDiscreteFactorBuilder withVariables(DiscreteVariable... variables) {
+    StandaloneDiscreteFactorBuilder builder = new StandaloneDiscreteFactorBuilder();
 
     for (DiscreteVariable variable : variables) {
       builder.variables.put(variable.getId(), variable);

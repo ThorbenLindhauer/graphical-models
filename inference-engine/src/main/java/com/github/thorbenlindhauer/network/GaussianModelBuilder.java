@@ -12,9 +12,12 @@
 */
 package com.github.thorbenlindhauer.network;
 
+import com.github.thorbenlindhauer.factor.GaussianFactor;
 
+/**
+ * @author Thorben
+ *
+ */
+public interface GaussianModelBuilder extends ModelBuilder<GaussianFactor, GaussianFactorBuilder<GaussianModelBuilder>>  {
 
-public interface DiscreteFactorBuilder<T> extends FactorBuilder<DiscreteFactorBuilder<T>> {
-
-  T basedOnTable(double[] table);
 }

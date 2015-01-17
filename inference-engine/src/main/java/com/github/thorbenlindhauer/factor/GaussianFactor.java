@@ -23,13 +23,16 @@ import org.apache.commons.math3.linear.RealVector;
  */
 public interface GaussianFactor extends Factor<GaussianFactor> {
 
-  public RealMatrix getCovarianceMatrix();
+  RealMatrix getCovarianceMatrix();
 
-  public RealVector getMeanVector();
+  RealVector getMeanVector();
 
-  public RealMatrix getPrecisionMatrix();
+  RealMatrix getPrecisionMatrix();
 
-  public RealVector getScaledMeanVector();
+  RealVector getScaledMeanVector();
 
-  public double getNormalizationConstant();
+  double getNormalizationConstant();
+
+  double getValueForAssignment(double[] assignment);
+
 }

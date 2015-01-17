@@ -15,13 +15,15 @@ package com.github.thorbenlindhauer.network;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.GaussianFactor;
 import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.Scope;
 
 public class ScopeBuilderImpl implements ScopeBuilder {
-  
+
   protected Map<String, DiscreteVariable> variables;
-  
+
   public ScopeBuilderImpl() {
     this.variables = new HashMap<String, DiscreteVariable>();
   }
@@ -31,11 +33,16 @@ public class ScopeBuilderImpl implements ScopeBuilder {
     variables.put(id, variable);
     return this;
   }
-  
-  public DiscreteModelBuilder done() {
+
+  public ModelBuilder<DiscreteFactor, DiscreteFactorBuilder<DiscreteModelBuilder>> discreteNetwork() {
     Scope scope = new Scope(variables.values());
     return new DiscreteModelBuilderImpl(scope);
   }
-  
-  
+
+  public ModelBuilder<GaussianFactor, GaussianFactorBuilder<GaussianModelBuilder>> gaussianNetwork() {
+    Scope scope = new Scope(variables.values());
+    return new GaussianModelBuilderImpl(scope);
+  }
+
+
 }
