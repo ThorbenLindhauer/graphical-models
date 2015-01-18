@@ -24,8 +24,8 @@ public class FactorSet<T extends Factor<T>> {
 
   protected Set<T> factors;
 
-  public FactorSet(Set<DiscreteFactor> factors) {
-    factors = new HashSet<DiscreteFactor>(factors);
+  public FactorSet(Set<T> factors) {
+    this.factors = new HashSet<T>(factors);
   }
 
   public FactorSet() {
