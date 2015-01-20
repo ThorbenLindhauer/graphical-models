@@ -15,6 +15,8 @@ package com.github.thorbenlindhauer.factor;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
+import com.github.thorbenlindhauer.variable.Scope;
+
 
 
 /**
@@ -34,5 +36,10 @@ public interface GaussianFactor extends Factor<GaussianFactor> {
   double getNormalizationConstant();
 
   double getValueForAssignment(double[] assignment);
+
+  /**
+   * Actually reduces the vector, i.e. removes the observed variables from the scope
+   */
+  GaussianFactor observation(Scope scope, double[] values);
 
 }

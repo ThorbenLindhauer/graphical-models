@@ -309,14 +309,6 @@ public class GaussianFactorTest {
 
     GaussianFactor aMarginal = abcFactor.marginal(variables);
 
-//    new double[][]{
-//        {3.0d, 4.0d, 6.0d},
-//        {3.0d, 6.0d, 7.0d},
-//        {10.0d, 3.0d, 5.5d}
-//      },
-//      new double[]{3.0d, 2.0d, 1.5d},
-//      8.5d);
-
     // then
     Collection<Variable> newVariables = aMarginal.getVariables().getVariables();
     assertThat(newVariables).hasSize(1);
@@ -345,7 +337,50 @@ public class GaussianFactorTest {
 
   @Test
   public void testValueObservation() {
-    // TODO: implement
+    GaussianFactor reducedVector = abcFactor.observation(newScope(new ContinuousVariable("A")), new double[]{ 2.5d });
+
+    // then
+    Collection<Variable> newVariables = reducedVector.getVariables().getVariables();
+    assertThat(newVariables).hasSize(2);
+    assertThat(newVariables).contains(new ContinuousVariable("B"), new ContinuousVariable("C"));
+
+    //  B     C    A
+    //6.0d, 7.0d, 3.0d
+    //3.0d, 5.5d, 10.0d
+    //4.0d, 6.0d, 3.0d
+    //
+    // X = {B, C}, Y = {A}
+
+    // precision matrix: K_xx
+    RealMatrix precisionMatrix = reducedVector.getPrecisionMatrix();
+    assertThat(precisionMatrix.isSquare()).isTrue();
+    assertThat(precisionMatrix.getColumnDimension()).isEqualTo(2);
+
+    double precision = precisionMatrix.getEntry(0, 0);
+    assertThat(precision).isEqualTo(6.0d, TestConstants.DOUBLE_VALUE_TOLERANCE);
+
+    precision = precisionMatrix.getEntry(0, 1);
+    assertThat(precision).isEqualTo(7.0d, TestConstants.DOUBLE_VALUE_TOLERANCE);
+
+    precision = precisionMatrix.getEntry(1, 0);
+    assertThat(precision).isEqualTo(3.0d, TestConstants.DOUBLE_VALUE_TOLERANCE);
+
+    precision = precisionMatrix.getEntry(1, 1);
+    assertThat(precision).isEqualTo(5.5d, TestConstants.DOUBLE_VALUE_TOLERANCE);
+
+    // scaled mean vector: h_x - K_xy * y
+    RealVector scaledMeanVector = reducedVector.getScaledMeanVector();
+    assertThat(scaledMeanVector.getDimension()).isEqualTo(2);
+
+    double meanValue = scaledMeanVector.getEntry(0);
+    assertThat(meanValue).isEqualTo(- 5.5d, TestConstants.DOUBLE_VALUE_TOLERANCE);
+
+    meanValue = scaledMeanVector.getEntry(1);
+    assertThat(meanValue).isEqualTo(- 23.5d, TestConstants.DOUBLE_VALUE_TOLERANCE);
+
+    // normalization constant: g + h_y * y - 0.5 * (y * K_yy * y)
+    //                         8.5 + 7.5 - 9,375
+    assertThat(reducedVector.getNormalizationConstant()).isEqualTo(6.625d, TestConstants.DOUBLE_VALUE_TOLERANCE);
   }
 
   @Test

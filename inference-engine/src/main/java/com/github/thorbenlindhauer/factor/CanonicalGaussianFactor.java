@@ -192,6 +192,42 @@ public class CanonicalGaussianFactor implements GaussianFactor {
     return subVector;
   }
 
+
+  @Override
+  public GaussianFactor observation(Scope observationScope, double[] values) {
+    if (observationScope.getVariables().size() != values.length) {
+      throw new ModelStructureException("Observed variables and values do not match");
+    }
+
+    if (scope.intersect(observationScope).isEmpty()) {
+      return this;
+    }
+
+    RealVector observationVector = new ArrayRealVector(values);
+
+    Scope newScope = scope.reduceBy(observationScope);
+
+    // reduce K matrix to values that are in the scope to keep
+    int[] scopeMapping = newScope.createContinuousVariableMapping(this.scope);
+    RealMatrix scopeValuesMatrix = precisionMatrix.getSubMatrix(scopeMapping, scopeMapping);
+
+    int[] observationScopeMapping = observationScope.createContinuousVariableMapping(this.scope);
+    // xyMatrix
+    RealMatrix scopeObservationMatrix = precisionMatrix.getSubMatrix(scopeMapping, observationScopeMapping);
+
+    // h_x
+    RealVector scopeMeanVector = getSubVector(scaledMeanVector, scopeMapping);
+    RealVector newMeanVector = scopeMeanVector.subtract(scopeObservationMatrix.operate(observationVector));
+
+    // g
+    RealVector observationMeanVector = getSubVector(scaledMeanVector, observationScopeMapping);
+    RealMatrix observationMatrix = precisionMatrix.getSubMatrix(observationScopeMapping, observationScopeMapping);
+    double newNormalizationConstant = normalizationConstant + observationMeanVector.dotProduct(observationVector)
+        - 0.5d * (observationVector.dotProduct(observationMatrix.operate(observationVector)));
+
+    return new CanonicalGaussianFactor(newScope, scopeValuesMatrix, newMeanVector, newNormalizationConstant);
+  }
+
   @Override
   public GaussianFactor normalize() {
 
@@ -248,6 +284,7 @@ public class CanonicalGaussianFactor implements GaussianFactor {
 
     return Math.exp(exponent);
   }
+
 
   public static CanonicalGaussianFactor fromMomentForm(Scope scope, RealVector meanVector, RealMatrix covarianceMatrix) {
 
@@ -369,5 +406,6 @@ public class CanonicalGaussianFactor implements GaussianFactor {
     return new CanonicalGaussianFactor(scope, conditionedPrecisionMatrix, scaledMeanVector, normalizationConstant);
 
   }
+
 
 }
