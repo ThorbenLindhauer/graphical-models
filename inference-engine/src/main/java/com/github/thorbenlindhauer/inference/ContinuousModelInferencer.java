@@ -14,22 +14,22 @@ package com.github.thorbenlindhauer.inference;
 
 import com.github.thorbenlindhauer.variable.Scope;
 
-public interface ExactInferencer {
+public interface ContinuousModelInferencer {
 
   // TODO: add methods for getting the overall probability distribution, adding observations, etc.
-  
+
   /**
    * P(Y)
    */
-  double jointProbability(Scope projection, int[] variableAssignment);
-  
+  double jointProbability(Scope projection, double[] variableAssignment);
+
   /**
    * P(Y, E = e)
    */
-  public double jointProbability(Scope projection, int[] variableAssignment, Scope observedVariables, int[] observation);
-  
+  public double jointProbability(Scope projection, double[] variableAssignment, Scope observedVariables, double[] observation);
+
   /**
    * P(Y | E = e)
    */
-  public double jointProbabilityConditionedOn(Scope projection, int[] variableAssignment, Scope observedVariables, int[] observation);
+  public double jointProbabilityConditionedOn(Scope projection, double[] variableAssignment, Scope observedVariables, double[] observation);
 }

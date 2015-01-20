@@ -20,7 +20,7 @@ import com.github.thorbenlindhauer.network.GraphicalModel;
 public class GeneratedClusterGraphInferencerTest extends ExactInferencerTest {
 
   @Override
-  protected ExactInferencer getInferencer(GraphicalModel<DiscreteFactor> graphicalModel) {
+  protected DiscreteModelInferencer getInferencer(GraphicalModel<DiscreteFactor> graphicalModel) {
     return new GeneratedCliqueTreeInferencer(graphicalModel, new CliqueTreeGenerator(), new BeliefUpdateContextFactory());
   }
 }

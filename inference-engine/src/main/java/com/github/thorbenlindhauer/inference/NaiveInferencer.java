@@ -22,7 +22,7 @@ import com.github.thorbenlindhauer.variable.Scope;
  *
  * @author Thorben
  */
-public class NaiveInferencer implements ExactInferencer {
+public class NaiveInferencer implements DiscreteModelInferencer {
 
   protected GraphicalModel<DiscreteFactor> model;
   protected DiscreteFactor jointDistribution;

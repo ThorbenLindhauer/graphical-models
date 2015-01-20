@@ -29,7 +29,7 @@ import com.github.thorbenlindhauer.cluster.messagepassing.BeliefUpdateContextFac
 import com.github.thorbenlindhauer.cluster.messagepassing.SumProductContextFactory;
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.importer.xmlbif.XMLBIFImporter;
-import com.github.thorbenlindhauer.inference.ExactInferencer;
+import com.github.thorbenlindhauer.inference.DiscreteModelInferencer;
 import com.github.thorbenlindhauer.inference.GeneratedCliqueTreeInferencer;
 import com.github.thorbenlindhauer.inference.NaiveInferencer;
 import com.github.thorbenlindhauer.inference.VariableEliminationInferencer;
@@ -62,7 +62,7 @@ public class WorkScenario {
   @Test
   @Ignore
   public void testNaiveInferencerMarginal() {
-    ExactInferencer inferencer = new NaiveInferencer(graphicalModel);
+    DiscreteModelInferencer inferencer = new NaiveInferencer(graphicalModel);
 
     // prob of being late at work
     double prob = inferencer.jointProbability(graphicalModel.getScope().subScope("Lateatwork"), new int[] { 0 });
@@ -75,7 +75,7 @@ public class WorkScenario {
 
   @Test
   public void testRandomVEInferencerMarginal() {
-    ExactInferencer inferencer = new VariableEliminationInferencer(graphicalModel, new RandomEliminationStrategy());
+    DiscreteModelInferencer inferencer = new VariableEliminationInferencer(graphicalModel, new RandomEliminationStrategy());
 
     long startTime = System.currentTimeMillis();
 
@@ -101,7 +101,7 @@ public class WorkScenario {
 
   @Test
   public void testMinFillVEInferencerMarginal() {
-    ExactInferencer inferencer = new VariableEliminationInferencer(graphicalModel, new MinFillEliminationStrategy());
+    DiscreteModelInferencer inferencer = new VariableEliminationInferencer(graphicalModel, new MinFillEliminationStrategy());
 
     long startTime = System.currentTimeMillis();
     double prob = inferencer.jointProbability(graphicalModel.getScope().subScope("Lateatwork"), new int[] { 0 });
@@ -131,7 +131,7 @@ public class WorkScenario {
 //    cliqueTreeGenerator.registerListener(CliqueTreeGenerator.CLUSTER_GRAPH_CREATED_EVENT,
 //        new ClusterGraphExportListener("testGeneratedCliqueTreeSumProductMarginal.dot"));
 
-    ExactInferencer inferencer = new GeneratedCliqueTreeInferencer(graphicalModel, cliqueTreeGenerator, new SumProductContextFactory());
+    DiscreteModelInferencer inferencer = new GeneratedCliqueTreeInferencer(graphicalModel, cliqueTreeGenerator, new SumProductContextFactory());
 
     long startTime = System.currentTimeMillis();
     double prob = inferencer.jointProbability(graphicalModel.getScope().subScope("Lateatwork"), new int[] { 0 });
@@ -161,7 +161,7 @@ public class WorkScenario {
 //    cliqueTreeGenerator.registerListener(CliqueTreeGenerator.CLUSTER_GRAPH_CREATED_EVENT,
 //        new ClusterGraphExportListener("testGeneratedCliqueTreeBeliefPropagationMarginal.dot"));
 
-    ExactInferencer inferencer = new GeneratedCliqueTreeInferencer(graphicalModel, cliqueTreeGenerator, new BeliefUpdateContextFactory());
+    DiscreteModelInferencer inferencer = new GeneratedCliqueTreeInferencer(graphicalModel, cliqueTreeGenerator, new BeliefUpdateContextFactory());
 
     long startTime = System.currentTimeMillis();
     double prob = inferencer.jointProbability(graphicalModel.getScope().subScope("Lateatwork"), new int[] { 0 });

@@ -18,7 +18,7 @@ import com.github.thorbenlindhauer.network.GraphicalModel;
 public class NaiveInferencerTest extends ExactInferencerTest {
 
   @Override
-  protected ExactInferencer getInferencer(GraphicalModel<DiscreteFactor> graphicalModel) {
+  protected DiscreteModelInferencer getInferencer(GraphicalModel<DiscreteFactor> graphicalModel) {
     return new NaiveInferencer(graphicalModel);
   }
 

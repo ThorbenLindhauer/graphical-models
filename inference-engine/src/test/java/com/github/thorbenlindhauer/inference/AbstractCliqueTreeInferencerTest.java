@@ -24,7 +24,7 @@ import com.github.thorbenlindhauer.network.GraphicalModel;
 public abstract class AbstractCliqueTreeInferencerTest extends ExactInferencerTest {
 
   @Override
-  protected ExactInferencer getInferencer(GraphicalModel<DiscreteFactor> graphicalModel) {
+  protected DiscreteModelInferencer getInferencer(GraphicalModel<DiscreteFactor> graphicalModel) {
     ClusterGraph<DiscreteFactor> clusterGraph = buildClusterGraph(graphicalModel);
     Cluster<DiscreteFactor> rootCluster = determineRootCluster(graphicalModel, clusterGraph);
     return new CliqueTreeInferencer(clusterGraph, rootCluster, getMessagePassingContextFactory());

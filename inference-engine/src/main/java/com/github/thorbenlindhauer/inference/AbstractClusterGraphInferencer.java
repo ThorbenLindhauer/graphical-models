@@ -22,53 +22,36 @@ import com.github.thorbenlindhauer.cluster.messagepassing.MessageListener;
 import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingContext;
 import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingContextFactory;
 import com.github.thorbenlindhauer.exception.ModelStructureException;
-import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.inference.loopy.ClusterGraphCalibrationContext;
 import com.github.thorbenlindhauer.inference.loopy.ClusterGraphCalibrationContextFactory;
 import com.github.thorbenlindhauer.variable.Scope;
 
 //TODO: think about interface "IncrementalInferencer" that allows to submit observations incrementally
-public class ClusterGraphInferencer implements ExactInferencer {
+public abstract class AbstractClusterGraphInferencer<T extends Factor<T>> {
 
   protected static final int MAX_ITERATIONS_PER_EDGE = 10;
 
-  protected ClusterGraph<DiscreteFactor> clusterGraph;
+  protected ClusterGraph<T> clusterGraph;
   protected boolean messagesPropagated = false;
-  protected MessagePassingContext<DiscreteFactor> messagePassingContext;
-  protected ClusterGraphCalibrationContext<DiscreteFactor> calibrationContext;
-  protected List<MessageListener<DiscreteFactor>> messagePassingListeners;
+  protected MessagePassingContext<T> messagePassingContext;
+  protected ClusterGraphCalibrationContext<T> calibrationContext;
+  protected List<MessageListener<T>> messagePassingListeners;
 
-  public ClusterGraphInferencer(ClusterGraph<DiscreteFactor> clusterGraph, MessagePassingContextFactory messageContextFactory, ClusterGraphCalibrationContextFactory<DiscreteFactor> calibrationContextFactory) {
+  public AbstractClusterGraphInferencer(ClusterGraph<T> clusterGraph, MessagePassingContextFactory messageContextFactory, ClusterGraphCalibrationContextFactory<T> calibrationContextFactory) {
     this.clusterGraph = clusterGraph;
     this.messagePassingContext = messageContextFactory.newMessagePassingContext(clusterGraph);
     this.calibrationContext = calibrationContextFactory.buildCalibrationContext(clusterGraph, messagePassingContext);
 
-    this.messagePassingListeners = new ArrayList<MessageListener<DiscreteFactor>>();
+    this.messagePassingListeners = new ArrayList<MessageListener<T>>();
     this.messagePassingListeners.add(messagePassingContext);
     this.messagePassingListeners.add(calibrationContext);
   }
 
-  public double jointProbability(Scope projection, int[] variableAssignment) {
-    DiscreteFactor matchingFactor = getClusterFactorContainingScope(projection);
-    return matchingFactor.marginal(projection).normalize().getValueForAssignment(variableAssignment);
-  }
-
-  public double jointProbability(Scope projection, int[] variableAssignment, Scope observedVariables, int[] observation) {
-    Scope jointScope = projection.union(observedVariables);
-    DiscreteFactor matchingFactor = getClusterFactorContainingScope(jointScope);
-    return matchingFactor.normalize().observation(observedVariables, observation).marginal(projection).getValueForAssignment(variableAssignment);
-  }
-
-  public double jointProbabilityConditionedOn(Scope projection, int[] variableAssignment, Scope observedVariables, int[] observation) {
-    Scope jointScope = projection.union(observedVariables);
-    DiscreteFactor matchingFactor = getClusterFactorContainingScope(jointScope);
-    return matchingFactor.observation(observedVariables, observation).marginal(projection).normalize().getValueForAssignment(variableAssignment);
-  }
-
-  protected DiscreteFactor getClusterFactorContainingScope(Scope scope) {
+  protected T getClusterFactorContainingScope(Scope scope) {
     ensureMessagesPropagated();
 
-    for (Cluster<DiscreteFactor> cluster : clusterGraph.getClusters()) {
+    for (Cluster<T> cluster : clusterGraph.getClusters()) {
       if (cluster.getScope().contains(scope)) {
         return messagePassingContext.getClusterPotential(cluster).marginal(scope);
       }
@@ -86,7 +69,7 @@ public class ClusterGraphInferencer implements ExactInferencer {
 
   protected void propagateMessages() {
     int currentIteration = 0;
-    Message<DiscreteFactor> nextMessage = calibrationContext.getNextUncalibratedMessage();
+    Message<T> nextMessage = calibrationContext.getNextUncalibratedMessage();
 
     // TODO: write log if calibration ends due to max iterations reached
     while (nextMessage != null && currentIteration < MAX_ITERATIONS_PER_EDGE * clusterGraph.getEdges().size()) {
@@ -100,13 +83,13 @@ public class ClusterGraphInferencer implements ExactInferencer {
     messagesPropagated = true;
   }
 
-  protected void notifyListeners(String event, Message<DiscreteFactor> nextMessage) {
-    for (MessageListener<DiscreteFactor> listener : messagePassingListeners) {
+  protected void notifyListeners(String event, Message<T> nextMessage) {
+    for (MessageListener<T> listener : messagePassingListeners) {
       listener.notify(event, nextMessage);
     }
   }
 
-  public void addMessageListener(MessageListener<DiscreteFactor> messageListener) {
+  public void addMessageListener(MessageListener<T> messageListener) {
     this.messagePassingListeners.add(messageListener);
   }
 }

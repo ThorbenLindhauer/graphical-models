@@ -19,7 +19,7 @@ import com.github.thorbenlindhauer.network.GraphicalModel;
 public class VariableEliminationMinFillInferencerTest extends ExactInferencerTest {
 
   @Override
-  protected ExactInferencer getInferencer(GraphicalModel<DiscreteFactor> graphicalModel) {
+  protected DiscreteModelInferencer getInferencer(GraphicalModel<DiscreteFactor> graphicalModel) {
     return new VariableEliminationInferencer(graphicalModel, new MinFillEliminationStrategy());
   }
 

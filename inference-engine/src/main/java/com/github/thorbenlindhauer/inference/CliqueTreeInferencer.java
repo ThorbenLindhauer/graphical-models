@@ -27,7 +27,7 @@ import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.variable.Scope;
 
 //TODO: think about interface "IncrementalInferencer" that allows to submit observations incrementally
-public class CliqueTreeInferencer implements ExactInferencer {
+public class CliqueTreeInferencer implements DiscreteModelInferencer {
 
   protected ClusterGraph<DiscreteFactor> clusterGraph;
   protected Cluster<DiscreteFactor> rootCluster;

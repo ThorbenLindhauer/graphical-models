@@ -23,9 +23,9 @@ import com.github.thorbenlindhauer.network.GraphicalModel;
 public abstract class LoopyBeliefPropagationInferencerTest extends ExactInferencerTest {
 
   @Override
-  protected ExactInferencer getInferencer(GraphicalModel<DiscreteFactor> graphicalModel) {
+  protected DiscreteModelInferencer getInferencer(GraphicalModel<DiscreteFactor> graphicalModel) {
     ClusterGraph<DiscreteFactor> clusterGraph = new BetheClusterGraphGenerator().generateClusterGraph(graphicalModel, new DefaultDiscreteFactorFactory());
-    return new ClusterGraphInferencer(clusterGraph, getMessagePassingContextFactory(), getCalibrationContextFactory());
+    return new DiscreteClusterGraphInferencer(clusterGraph, getMessagePassingContextFactory(), getCalibrationContextFactory());
   }
 
   protected abstract MessagePassingContextFactory getMessagePassingContextFactory();

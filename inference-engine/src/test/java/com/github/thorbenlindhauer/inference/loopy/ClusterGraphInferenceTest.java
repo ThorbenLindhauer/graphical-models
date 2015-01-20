@@ -31,7 +31,7 @@ import com.github.thorbenlindhauer.cluster.messagepassing.BeliefUpdateContextFac
 import com.github.thorbenlindhauer.cluster.messagepassing.MessagePassingContextFactory;
 import com.github.thorbenlindhauer.cluster.messagepassing.SumProductContextFactory;
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
-import com.github.thorbenlindhauer.inference.ClusterGraphInferencer;
+import com.github.thorbenlindhauer.inference.DiscreteClusterGraphInferencer;
 import com.github.thorbenlindhauer.inference.loopy.PrioritizedCalibrationContext.PrioritizedCalibrationContextFactory;
 import com.github.thorbenlindhauer.inference.loopy.RoundRobinCalibrationContext.RoundRobinCalibrationContextFactory;
 import com.github.thorbenlindhauer.network.StandaloneDiscreteFactorBuilder;
@@ -150,7 +150,7 @@ public class ClusterGraphInferenceTest {
 
   @Test
   public void testApproximateInference() {
-    ClusterGraphInferencer inferencer = new ClusterGraphInferencer(clusterGraph, messagePassingContextFactory, calibrationContextFactory);
+    DiscreteClusterGraphInferencer inferencer = new DiscreteClusterGraphInferencer(clusterGraph, messagePassingContextFactory, calibrationContextFactory);
 
     DiscreteFactor exactAMarginal = fullFactor.marginal(clusterGraph.getScope().subScope("A"));
     double expectedA0Prob = exactAMarginal.getValueAtIndex(0);

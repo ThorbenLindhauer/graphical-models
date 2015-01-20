@@ -26,7 +26,7 @@ public abstract class ExactInferencerTest {
   protected GraphicalModel<DiscreteFactor> bayesianNetwork;
   protected GraphicalModel<DiscreteFactor> markovNetwork;
 
-  protected abstract ExactInferencer getInferencer(GraphicalModel<DiscreteFactor> model);
+  protected abstract DiscreteModelInferencer getInferencer(GraphicalModel<DiscreteFactor> model);
 
   /**
    * Creates a model like A -> C <- B, where there is a CPD P(C | A, B)
@@ -71,7 +71,7 @@ public abstract class ExactInferencerTest {
 
   @Test
   public void testBayesianNetworkSimpleNaiveInference() {
-    ExactInferencer inferencer = getInferencer(bayesianNetwork);
+    DiscreteModelInferencer inferencer = getInferencer(bayesianNetwork);
     double jointZeroProbability = inferencer.jointProbability(bayesianNetwork.getScope().subScope("C"), new int[] {0});
     assertThat(jointZeroProbability).isEqualTo(0.6265d, TestConstants.DOUBLE_VALUE_TOLERANCE);
 
@@ -81,7 +81,7 @@ public abstract class ExactInferencerTest {
 
   @Test
   public void testBayesianNetworkSimpleNaiveInferenceWithObservations() {
-    ExactInferencer inferencer = getInferencer(bayesianNetwork);
+    DiscreteModelInferencer inferencer = getInferencer(bayesianNetwork);
     double jointZeroProbability = inferencer.jointProbability(
         bayesianNetwork.getScope().subScope("A"), new int[] {0}, // query
         bayesianNetwork.getScope().subScope("C"), new int[] {1} // observation
@@ -103,7 +103,7 @@ public abstract class ExactInferencerTest {
 
   @Test
   public void testBayesianNetworkSimpleNaiveInferenceConditionedOnObservations() {
-    ExactInferencer inferencer = getInferencer(bayesianNetwork);
+    DiscreteModelInferencer inferencer = getInferencer(bayesianNetwork);
     double jointZeroProbability = inferencer.jointProbabilityConditionedOn(
         bayesianNetwork.getScope().subScope("A"), new int[] {0}, // query
         bayesianNetwork.getScope().subScope("C"), new int[] {1} // observation
@@ -127,7 +127,7 @@ public abstract class ExactInferencerTest {
 
   @Test
   public void testMarkovNetworkSimpleNaiveInference() {
-    ExactInferencer inferencer = getInferencer(markovNetwork);
+    DiscreteModelInferencer inferencer = getInferencer(markovNetwork);
 
     double jointAZeroProbability = inferencer.jointProbability(bayesianNetwork.getScope().subScope("A"), new int[] {0});
     assertThat(jointAZeroProbability).isEqualTo(0.497395833d, TestConstants.DOUBLE_VALUE_TOLERANCE);
@@ -156,7 +156,7 @@ public abstract class ExactInferencerTest {
 
   @Test
   public void testMarkovNetworkSimpleNaiveInferenceWithObservations() {
-    ExactInferencer inferencer = getInferencer(markovNetwork);
+    DiscreteModelInferencer inferencer = getInferencer(markovNetwork);
     double jointZeroProbability = inferencer.jointProbability(
         bayesianNetwork.getScope().subScope("B"), new int[] {0}, // query
         bayesianNetwork.getScope().subScope("C"), new int[] {1} // observation
@@ -178,7 +178,7 @@ public abstract class ExactInferencerTest {
 
   @Test
   public void testMarkovNetworkSimpleNaiveInferenceConditionedOnObservations() {
-    ExactInferencer inferencer = getInferencer(markovNetwork);
+    DiscreteModelInferencer inferencer = getInferencer(markovNetwork);
     double jointZeroProbability = inferencer.jointProbabilityConditionedOn(
         bayesianNetwork.getScope().subScope("B"), new int[] {0}, // query
         bayesianNetwork.getScope().subScope("C"), new int[] {1} // observation

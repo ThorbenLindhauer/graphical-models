@@ -32,7 +32,7 @@ import com.github.thorbenlindhauer.variable.Variable;
  *
  * @author Thorben
  */
-public class VariableEliminationInferencer implements ExactInferencer {
+public class VariableEliminationInferencer implements DiscreteModelInferencer {
 
   protected GraphicalModel<DiscreteFactor> graphicalModel;
   protected VariableEliminationStrategy variableEliminationStrategy;
