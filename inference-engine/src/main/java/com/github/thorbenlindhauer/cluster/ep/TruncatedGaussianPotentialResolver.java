@@ -51,7 +51,7 @@ public class TruncatedGaussianPotentialResolver implements ClusterPotentialResol
   public FactorSet<GaussianFactor> project(FactorSet<GaussianFactor> additionalFactors, Scope projectionScope) {
 
     if (projectionScope.size() != 1 || !projectionScope.contains(predictionVariable.getId())) {
-      throw new InferenceException("Can only project on variable " + predictionVariable.getId());
+      throw new InferenceException("Can only project on variable " + predictionVariable.getId() + " not on scope " + projectionScope);
     }
 
     for (GaussianFactor factor : additionalFactors.getFactors()) {

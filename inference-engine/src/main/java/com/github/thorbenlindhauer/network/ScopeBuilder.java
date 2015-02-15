@@ -13,10 +13,18 @@
 package com.github.thorbenlindhauer.network;
 
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
+import com.github.thorbenlindhauer.factor.GaussianFactor;
+import com.github.thorbenlindhauer.variable.Scope;
 
 public interface ScopeBuilder {
 
-  ScopeBuilder variable(String id, int cardinality);
+  ScopeBuilder discreteVariable(String id, int cardinality);
+
+  ScopeBuilder continuousVariable(String id);
+
+  Scope buildScope();
 
   ModelBuilder<DiscreteFactor, DiscreteFactorBuilder<DiscreteModelBuilder>> discreteNetwork();
+
+  ModelBuilder<GaussianFactor, GaussianFactorBuilder<GaussianModelBuilder>> gaussianNetwork();
 }

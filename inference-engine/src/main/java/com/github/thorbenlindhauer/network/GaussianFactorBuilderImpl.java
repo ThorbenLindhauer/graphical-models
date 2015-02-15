@@ -17,6 +17,7 @@ import java.util.Set;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
+import com.github.thorbenlindhauer.exception.ModelStructureException;
 import com.github.thorbenlindhauer.factor.CanonicalGaussianFactor;
 import com.github.thorbenlindhauer.factor.GaussianFactor;
 import com.github.thorbenlindhauer.variable.Scope;
@@ -75,8 +76,12 @@ public class GaussianFactorBuilderImpl extends AbstractFactorBuilderImpl<Gaussia
 
     @Override
     public GaussianModelBuilder parameters(RealVector meanVector, RealMatrix covarianceMatrix, RealMatrix weightMatrix) {
-
       Scope scope = new Scope(factorVariables);
+
+      if (conditioningScope == null) {
+        throw new ModelStructureException("Conditional Linear Gaussian over scope " + scope + " has no conditioning scope");
+      }
+
       GaussianFactor factor = CanonicalGaussianFactor.fromConditionalForm(scope, conditioningScope, meanVector, covarianceMatrix, weightMatrix);
       modelBuilder.addFactor(factor);
 

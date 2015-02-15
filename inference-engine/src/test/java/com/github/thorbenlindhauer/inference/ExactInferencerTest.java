@@ -35,7 +35,7 @@ public abstract class ExactInferencerTest {
   @Before
   public void setUp() {
     bayesianNetwork = GraphicalModel.create()
-        .variable("A", 3).variable("B", 3).variable("C", 2).discreteNetwork()
+        .discreteVariable("A", 3).discreteVariable("B", 3).discreteVariable("C", 2).discreteNetwork()
         .factor()
           .scope("A")
           .basedOnTable(new double[] {0.1, 0.4, 0.5})
@@ -55,7 +55,7 @@ public abstract class ExactInferencerTest {
         .build();
 
     markovNetwork = GraphicalModel.create()
-        .variable("A", 3).variable("B", 3).variable("C", 2).discreteNetwork()
+        .discreteVariable("A", 3).discreteVariable("B", 3).discreteVariable("C", 2).discreteNetwork()
         .factor()
           .scope("A", "B")
           .basedOnTable(new double[]{ 10, 1, 1, 1, 10, 1, 1, 1, 10 })

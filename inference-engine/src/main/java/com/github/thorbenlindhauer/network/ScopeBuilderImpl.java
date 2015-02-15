@@ -17,21 +17,33 @@ import java.util.Map;
 
 import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.factor.GaussianFactor;
+import com.github.thorbenlindhauer.variable.ContinuousVariable;
 import com.github.thorbenlindhauer.variable.DiscreteVariable;
 import com.github.thorbenlindhauer.variable.Scope;
+import com.github.thorbenlindhauer.variable.Variable;
 
 public class ScopeBuilderImpl implements ScopeBuilder {
 
-  protected Map<String, DiscreteVariable> variables;
+  protected Map<String, Variable> variables;
 
   public ScopeBuilderImpl() {
-    this.variables = new HashMap<String, DiscreteVariable>();
+    this.variables = new HashMap<String, Variable>();
   }
 
-  public ScopeBuilder variable(String id, int cardinality) {
+  public ScopeBuilder discreteVariable(String id, int cardinality) {
     DiscreteVariable variable = new DiscreteVariable(id, cardinality);
     variables.put(id, variable);
     return this;
+  }
+
+  public ScopeBuilder continuousVariable(String id) {
+    ContinuousVariable variable = new ContinuousVariable(id);
+    variables.put(id, variable);
+    return this;
+  }
+
+  public Scope buildScope() {
+    return new Scope(variables.values());
   }
 
   public ModelBuilder<DiscreteFactor, DiscreteFactorBuilder<DiscreteModelBuilder>> discreteNetwork() {
@@ -43,6 +55,4 @@ public class ScopeBuilderImpl implements ScopeBuilder {
     Scope scope = new Scope(variables.values());
     return new GaussianModelBuilderImpl(scope);
   }
-
-
 }

@@ -14,6 +14,11 @@ package com.github.thorbenlindhauer.factor;
 
 import java.util.Arrays;
 
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
+
 import com.github.thorbenlindhauer.variable.Scope;
 
 /**
@@ -32,6 +37,18 @@ public interface DefaultFactorFactory<T extends Factor<T>> {
       Arrays.fill(values, 1);
       DiscreteFactor constantFactor = new TableBasedDiscreteFactor(scope, values);
       return constantFactor;
+    }
+
+  }
+
+  public static class DefaultGaussianFactorFactory implements DefaultFactorFactory<GaussianFactor> {
+
+    @Override
+    public GaussianFactor build(Scope scope) {
+      RealMatrix precisionMatrix = new Array2DRowRealMatrix(scope.size(), scope.size());
+      RealVector meanVector = new ArrayRealVector(scope.size());
+      GaussianFactor factor = new CanonicalGaussianFactor(scope, precisionMatrix, meanVector, 0.0d);
+      return factor;
     }
 
   }

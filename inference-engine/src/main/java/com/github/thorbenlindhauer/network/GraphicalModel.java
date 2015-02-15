@@ -15,7 +15,9 @@ package com.github.thorbenlindhauer.network;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.github.thorbenlindhauer.factor.DiscreteFactor;
 import com.github.thorbenlindhauer.factor.Factor;
+import com.github.thorbenlindhauer.factor.GaussianFactor;
 import com.github.thorbenlindhauer.variable.Scope;
 
 public class GraphicalModel<T extends Factor<T>> {
@@ -38,5 +40,13 @@ public class GraphicalModel<T extends Factor<T>> {
 
   public static ScopeBuilder create() {
     return new ScopeBuilderImpl();
+  }
+
+  public static ModelBuilder<DiscreteFactor, DiscreteFactorBuilder<DiscreteModelBuilder>> discreteNetwork(Scope scope) {
+    return new DiscreteModelBuilderImpl(scope);
+  }
+
+  public static ModelBuilder<GaussianFactor, GaussianFactorBuilder<GaussianModelBuilder>> gaussianNetwork(Scope scope) {
+    return new GaussianModelBuilderImpl(scope);
   }
 }
