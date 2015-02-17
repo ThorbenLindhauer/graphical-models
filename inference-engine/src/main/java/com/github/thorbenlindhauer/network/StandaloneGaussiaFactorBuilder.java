@@ -68,6 +68,14 @@ public class StandaloneGaussiaFactorBuilder implements GaussianFactorBuilder<Gau
     return new GaussianConditionalBuilderImpl();
   }
 
+  public StandaloneGaussiaFactorBuilder addVariable(Variable variable) {
+    if (variables.get(variable.getId()) == null) {
+      variables.put(variable.getId(), variable);
+    }
+
+    return this;
+  }
+
   public static StandaloneGaussiaFactorBuilder withVariables(ContinuousVariable... variables) {
     StandaloneGaussiaFactorBuilder builder = new StandaloneGaussiaFactorBuilder();
 
@@ -76,6 +84,10 @@ public class StandaloneGaussiaFactorBuilder implements GaussianFactorBuilder<Gau
     }
 
     return builder;
+  }
+
+  public Scope getVariables() {
+    return new Scope(variables.values());
   }
 
   public class GaussianMomentFormBuilderImpl implements GaussianMomentFormBuilder<GaussianFactor> {

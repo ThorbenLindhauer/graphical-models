@@ -318,9 +318,9 @@ public class CanonicalGaussianFactor implements GaussianFactor {
     // where X indicates variables that are part of the prediction scope and Y are variables being part of the conditioning scope
 
     // assuming
-    //   meanVector: a
-    //   covarianceMatrix: C
-    //   weightMatrix: B
+    //   meanVector: a; |x| vector
+    //   covarianceMatrix: C; |x| cross |x| matrix
+    //   weightMatrix: B;  |x| cross |y| matrix
 
 
     // XX = C^-1

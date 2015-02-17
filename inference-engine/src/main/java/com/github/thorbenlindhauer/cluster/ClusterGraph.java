@@ -19,11 +19,18 @@ import com.github.thorbenlindhauer.exception.ModelStructureException;
 import com.github.thorbenlindhauer.factor.Factor;
 import com.github.thorbenlindhauer.variable.Scope;
 
+// TODO: ClusterGraph should be immutable as otherwise one might think it can be modified during inference
+// regards methods like addCluster and the scope constructor
 public class ClusterGraph<T extends Factor<T>> {
 
   protected Set<Cluster<T>> clusters;
   protected Set<Edge<T>> edges;
   protected Scope scope;
+
+  public ClusterGraph(Scope scope) {
+    this(new HashSet<Cluster<T>>());
+    this.scope = scope;
+  }
 
   public ClusterGraph(Set<Cluster<T>> clusters) {
     this.clusters = clusters;
@@ -38,6 +45,15 @@ public class ClusterGraph<T extends Factor<T>> {
     return edges;
   }
 
+  public void addCluster(Cluster<T> cluster) {
+    initScope();
+    if (!scope.contains(cluster.getScope())) {
+      throw new ModelStructureException("Cluster scope " + cluster.getScope() + " is not part of this graph's scope " + scope);
+    }
+
+    this.clusters.add(cluster);
+  }
+
   public Edge<T> connect(Cluster<T> cluster1, Cluster<T> cluster2) {
     if (!clusters.contains(cluster1) || !clusters.contains(cluster2)) {
       throw new ModelStructureException("At least one of the cluster " + cluster1 + ", "
@@ -50,11 +66,13 @@ public class ClusterGraph<T extends Factor<T>> {
   }
 
   public void initScope() {
-    for (Cluster<T> cluster : clusters) {
-      if (scope == null) {
-        scope = cluster.getScope();
-      } else {
-        scope = scope.union(cluster.getScope());
+    if (scope == null) {
+      for (Cluster<T> cluster : clusters) {
+        if (scope == null) {
+          scope = cluster.getScope();
+        } else {
+          scope = scope.union(cluster.getScope());
+        }
       }
     }
   }

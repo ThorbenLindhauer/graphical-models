@@ -22,7 +22,7 @@ import com.github.thorbenlindhauer.variable.Scope;
  * @author Thorben
  *
  */
-public class GaussianClusterGraphInferencer extends AbstractClusterGraphInferencer<GaussianFactor> implements ContinuousModelInferencer {
+public class GaussianClusterGraphInferencer extends AbstractClusterGraphInferencer<GaussianFactor> implements GaussianModelInferencer {
 
 
   public GaussianClusterGraphInferencer(ClusterGraph<GaussianFactor> clusterGraph, MessagePassingContextFactory messageContextFactory,
@@ -45,5 +45,15 @@ public class GaussianClusterGraphInferencer extends AbstractClusterGraphInferenc
     Scope jointScope = projection.union(observedVariables);
     GaussianFactor matchingFactor = getClusterFactorContainingScope(jointScope);
     return matchingFactor.observation(observedVariables, observation).marginal(projection).normalize().getValueForAssignment(variableAssignment);
+  }
+
+  public double[] posteriorMean(Scope projection) {
+    GaussianFactor matchingFactor = getClusterFactorContainingScope(projection);
+    return matchingFactor.getMeanVector().toArray();
+  }
+
+  public double[][] posteriorCovariance(Scope projection) {
+    GaussianFactor matchingFactor = getClusterFactorContainingScope(projection);
+    return matchingFactor.getCovarianceMatrix().getData();
   }
 }
