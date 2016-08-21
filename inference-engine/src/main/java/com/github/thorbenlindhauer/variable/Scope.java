@@ -12,6 +12,7 @@
 */
 package com.github.thorbenlindhauer.variable;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -236,6 +237,35 @@ public class Scope {
 
   public int size() {
     return sortedVariableIds.length;
+  }
+
+  /**
+   * @param iterable containing the order of variable IDs to map from
+   *
+   * @return an array that contains for each input variable ID (at index i) the
+   * corresponding index of that variable in the canonical order as represented by this scope
+   */
+  public int[] createOrderMapping(Iterable<String> variableIds) {
+
+    int[] mapping = new int[sortedVariableIds.length];
+    Arrays.fill(mapping, -1);
+
+    int j = 0;
+    for (String variableIdToMapFrom : variableIds) {
+      if (!contains(variableIdToMapFrom)) {
+        throw new RuntimeException("Variable " + variableIdToMapFrom + " is not contained in scope " + this);
+      }
+
+      for (int i = 0; i < sortedVariableIds.length; i++) {
+        if (sortedVariableIds[i].equals(variableIdToMapFrom)) {
+          mapping[j] = i;
+          break;
+        }
+      }
+      j++;
+    }
+
+    return mapping;
   }
 
   public String toString() {
