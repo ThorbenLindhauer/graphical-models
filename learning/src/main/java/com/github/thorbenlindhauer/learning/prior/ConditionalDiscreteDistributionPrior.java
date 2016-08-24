@@ -14,7 +14,6 @@ package com.github.thorbenlindhauer.learning.prior;
 
 import com.github.thorbenlindhauer.learning.DistributionStructureException;
 import com.github.thorbenlindhauer.learning.distribution.DirichletDistribution;
-import com.github.thorbenlindhauer.variable.IndexMapper;
 import com.github.thorbenlindhauer.variable.Scope;
 
 /**

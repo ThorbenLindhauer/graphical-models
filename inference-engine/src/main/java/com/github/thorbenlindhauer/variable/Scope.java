@@ -274,7 +274,7 @@ public class Scope {
     sb.append("[");
 
     int i = 0;
-    for (String variableId : variables.keySet()) {
+    for (String variableId : sortedVariableIds) {
       sb.append(variableId);
 
       if (i != variables.size() - 1) {
