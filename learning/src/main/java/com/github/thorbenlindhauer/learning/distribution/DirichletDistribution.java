@@ -42,6 +42,10 @@ public class DirichletDistribution {
 
     this.parameters[dimension] = value;
   }
+  
+  public void setParameters(double[] parameters) {
+    this.parameters = parameters;
+  }
 
   public void submitEvidence(int dimension, int value) {
     if (dimension >= parameters.length) {

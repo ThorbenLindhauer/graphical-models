@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -183,6 +184,10 @@ public class Scope {
   }
 
   public Scope subScope(String... variableIds) {
+    return subScope(Arrays.asList(variableIds));
+  }
+  
+  public Scope subScope(Collection<String> variableIds) {
     Set<Variable> subVariables = new HashSet<Variable>();
 
     for (String variableId : variableIds) {

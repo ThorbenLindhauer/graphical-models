@@ -65,6 +65,10 @@ public class ConditionalDiscreteDistributionPrior {
 
     // TODO prior initialization
   }
+  
+  public DirichletDistribution[] getPriors() {
+    return priors;
+  }
 
 
   public void submitEvidence(int[] conditioningAssignment, int[] observations) {
@@ -128,4 +132,17 @@ public class ConditionalDiscreteDistributionPrior {
 
     return values;
   }
+  
+  public Scope getDescribedScope() {
+    return describedScope;
+  }
+  
+  public Scope getScope() {
+    return scope;
+  }
+  
+  public Scope getConditioningScope() {
+    return conditioningScope;
+  }
+
 }
