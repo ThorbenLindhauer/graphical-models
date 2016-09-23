@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.thorbenlindhauer</groupId>
   <artifactId>graphmod-parent</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.1.0</version>
   <packaging>pom</packaging>
   <name>Graphical Models - Parent</name>
   <description>A Java library for performing inference in graphical models (Bayesian and Markov networks) and learning 
@@ -61,6 +61,7 @@
     <connection>scm:git:git@github.com:ThorbenLindhauer/graphical-models.git</connection>
     <developerConnection>scm:git:git@github.com:ThorbenLindhauer/graphical-models.git</developerConnection>
     <url>https://github.com/ThorbenLindhauer/graphical-models</url>
+    <tag>0.1.0</tag>
   </scm>
   
   <profiles>
