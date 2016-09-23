@@ -121,12 +121,12 @@ public class VariableEliminationInferencer implements DiscreteModelInferencer {
 
       if (!isProjectionVariable && !isVariableToBeEliminated) {
         throw new InferenceException("Model variable " + modelVariable.getId() + " is neither in the joint distribution's scope," +
-        		" nor in the variables to be eliminated.");
+            " nor in the variables to be eliminated.");
       }
 
       if (isProjectionVariable && isVariableToBeEliminated) {
         throw new InferenceException("Model variable " + modelVariable.getId() + " is supposed to be part of the joint probability" +
-        		" distribution, as well as to be eliminated.");
+            " distribution, as well as to be eliminated.");
       }
     }
   }

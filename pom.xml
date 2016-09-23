@@ -4,6 +4,10 @@
   <artifactId>graphmod-parent</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
+  <name>Graphical Models - Parent</name>
+  <description>A Java library for performing inference in graphical models (Bayesian and Markov networks) and learning 
+    distribution parameters.</description>
+  <url>https://github.com/ThorbenLindhauer/graphical-models</url>
   
   <modules>
     <module>inference-engine</module>
@@ -11,6 +15,15 @@
     <module>learning</module>
     <module>integration</module>
   </modules>
+  
+  <properties>
+    <plugin.version.source>2.3</plugin.version.source>
+    <plugin.version.javadoc>2.9.1</plugin.version.javadoc>
+    <plugin.version.deploy>2.8.2</plugin.version.deploy>
+    <plugin.version.nexus-staging>1.6.4</plugin.version.nexus-staging>
+    <plugin.version.gpg>1.4</plugin.version.gpg>
+    <plugin.version.release>2.5.1</plugin.version.release>
+  </properties>
 
   <dependencyManagement>
     <dependencies>
@@ -29,4 +42,124 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+  
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+  
+  <developers>
+    <developer>
+      <name>Thorben Lindhauer</name>
+      <url>https://github.com/ThorbenLindhauer</url>
+    </developer>
+  </developers>
+  
+  <scm>
+    <connection>scm:git:git@github.com:ThorbenLindhauer/graphical-models.git</connection>
+    <developerConnection>scm:git:git@github.com:ThorbenLindhauer/graphical-models.git</developerConnection>
+    <url>https://github.com/ThorbenLindhauer/graphical-models</url>
+  </scm>
+  
+  <profiles>
+    <!-- activate this profile to release to maven central -->
+    <profile>
+      <id>sonatype-oss-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>${plugin.version.gpg}</version>
+            <configuration>
+              <passphrase>${gpg.passphrase}</passphrase>
+            </configuration>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>${plugin.version.nexus-staging}</version>
+            <executions>
+              <execution>
+                <id>central-deploy</id>
+                <phase>deploy</phase>
+                <goals>
+                  <goal>deploy</goal>
+                </goals>
+                <configuration>
+                  <serverId>central</serverId>
+                  <nexusUrl>https://oss.sonatype.org</nexusUrl>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+  
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>${plugin.version.release}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>${plugin.version.source}</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>attach-test-sources</id>
+            <phase>package</phase>
+            <goals>
+              <goal>test-jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>${plugin.version.javadoc}</version>
+        <configuration>
+          <quiet>true</quiet>
+        </configuration>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <additionalparam>-Xdoclint:none</additionalparam>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>  
+    </plugins>
+  </build>
 </project>

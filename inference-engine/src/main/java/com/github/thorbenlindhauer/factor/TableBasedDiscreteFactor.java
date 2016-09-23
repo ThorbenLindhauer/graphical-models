@@ -105,7 +105,7 @@ public class TableBasedDiscreteFactor implements DiscreteFactor {
   public TableBasedDiscreteFactor division(DiscreteFactor other) {
     if (!variables.contains(other.getVariables().getVariableIds())) {
       throw new FactorOperationException("Divisor scope " + other.getVariables() + " is not a subset of" +
-      		" this factor's scope " + variables);
+          " this factor's scope " + variables);
     }
 
     Scope newVariables = variables;
