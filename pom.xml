@@ -76,6 +76,9 @@
 <!--             <configuration> -->
 <!--               <passphrase>${gpg.passphrase}</passphrase> -->
 <!--             </configuration> -->
+			<configuration>
+			  <useAgent>true</useAgent>
+			</configuration>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -100,6 +103,23 @@
                 <configuration>
                   <serverId>central</serverId>
                   <nexusUrl>https://oss.sonatype.org</nexusUrl>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <version>${plugin.version.deploy}</version>
+            <executions>
+              <execution>
+                <id>default-deploy</id>
+                <phase>deploy</phase>
+                <goals>
+                  <goal>deploy</goal>
+                </goals>
+                <configuration>
+                  <skip>true</skip>
                 </configuration>
               </execution>
             </executions>
