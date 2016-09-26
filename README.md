@@ -1,7 +1,7 @@
 graphical-models
 ================
 
-*graphical-models* is a Java library of exact and approximate inference algorithms in Bayesian and Markov networks. 
+*graphical-models* is a Java library of exact and approximate inference algorithms in Bayesian and Markov networks.
 
 Inference can be performed in networks with factors of types:
 
@@ -10,12 +10,30 @@ Inference can be performed in networks with factors of types:
 
 It provides implementations of the following algorithms:
 
-* Variable Elimination 
+* Variable Elimination
 * Clique Tree Inference
 * Loopy Belief Propagation
 * Expectation Propagation
 
 Networks are specified in terms of cluster graphs. A cluster, a node in the cluster graph, may consist of any number of factors.
+
+Setup
+-----
+
+Maven dependency:
+
+```xml
+<dependency>
+  <groupId>com.github.thorbenlindhauer</groupId>
+  <artifactId>graphmod-inference-engine</artifactId>
+  <version>0.1.0</version>
+</dependency>
+```
+
+How to Use
+----------
+
+Yet to come.
 
 Variable Elimination
 --------------------
